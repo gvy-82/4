@@ -1,43 +1,25 @@
 import { useRef, useEffect } from 'react';
-import { RadioStation } from '../types';
-import { useTheme } from '../App';
+import type { RadioStation } from '../types';
 
 interface PlayerProps {
   station: RadioStation | null;
   isPlaying: boolean;
-  isRecording: boolean;
-  recordingTime: number;
-  onPlay: () => void;
-  onPause: () => void;
-  onRecord: () => void;
-  onStopRecord: () => void;
   volume: number;
   onVolumeChange: (vol: number) => void;
+  onPlay: () => void;
+  onPause: () => void;
   audioRef: React.RefObject<HTMLAudioElement | null>;
 }
-
-const formatTime = (seconds: number) => {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-};
 
 const Player = ({
   station,
   isPlaying,
-  isRecording,
-  recordingTime,
-  onPlay,
-  onPause,
-  onRecord,
-  onStopRecord,
   volume,
   onVolumeChange,
+  onPlay,
+  onPause,
   audioRef,
 }: PlayerProps) => {
-  const { isDark } = useTheme();
-  const progressRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
@@ -46,25 +28,16 @@ const Player = ({
 
   if (!station) {
     return (
-      <div className={`rounded-2xl p-6 border transition-colors duration-300 ${
-        isDark
-          ? 'bg-gray-900/80 backdrop-blur-sm border-gray-700/50'
-          : 'bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg'
-      }`}>
-        <div className={`flex items-center justify-center h-32 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-          <p>Выберите станцию для воспроизведения</p>
+      <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+        <div className="flex items-center justify-center h-32 text-gray-500">
+          <p>Выберите станцию</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`rounded-2xl p-6 border transition-colors duration-300 ${
-      isDark
-        ? 'bg-gray-900/80 backdrop-blur-sm border-gray-700/50'
-        : 'bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg'
-    }`}>
-      {/* Station info */}
+    <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
       <div className="flex items-center gap-4 mb-4">
         <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
           {station.favicon ? (
@@ -82,37 +55,34 @@ const Player = ({
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <h2 className={`font-bold text-lg truncate ${isDark ? 'text-white' : 'text-gray-800'}`}>{station.name}</h2>
-          <p className={`text-sm truncate ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-            {station.country} {station.tags && `• ${station.tags.split(',').slice(0, 2).join(', ')}`}
+          <h2 className="font-bold text-lg truncate text-white">{station.name}</h2>
+          <p className="text-sm truncate text-gray-400">
+            {station.tags && station.tags.split(',').slice(0, 2).join(', ')}
           </p>
         </div>
       </div>
 
-      {/* Progress/Status bar */}
       <div className="mb-4">
-        <div ref={progressRef} className={`h-1 rounded-full overflow-hidden ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
+        <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all ${
-              isPlaying ? 'bg-gradient-to-r from-purple-500 to-pink-500 animate-pulse' : 'bg-gray-400'
+              isPlaying ? 'bg-gradient-to-r from-purple-500 to-pink-500 animate-pulse' : 'bg-gray-600'
             }`}
             style={{ width: isPlaying ? '100%' : '0%' }}
           />
         </div>
         <div className="flex justify-between mt-1">
-          <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+          <span className="text-xs text-gray-500">
             {isPlaying ? '● LIVE' : '○ Пауза'}
           </span>
           {station.bitrate > 0 && (
-            <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>{station.bitrate} kbps</span>
+            <span className="text-xs text-gray-500">{station.bitrate} kbps</span>
           )}
         </div>
       </div>
 
-      {/* Controls */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {/* Play/Pause */}
           <button
             onClick={isPlaying ? onPause : onPlay}
             className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center hover:scale-105 transition-transform shadow-lg shadow-purple-500/30"
@@ -127,34 +97,10 @@ const Player = ({
               </svg>
             )}
           </button>
-
-          {/* Record */}
-          <button
-            onClick={isRecording ? onStopRecord : onRecord}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-              isRecording
-                ? 'bg-red-600 animate-pulse shadow-lg shadow-red-500/30'
-                : isDark
-                  ? 'bg-gray-700 hover:bg-gray-600'
-                  : 'bg-gray-200 hover:bg-gray-300'
-            }`}
-            title={isRecording ? 'Остановить запись' : 'Начать запись'}
-          >
-            <div className={`w-4 h-4 rounded-full ${isRecording ? 'bg-white' : 'bg-red-500'}`} />
-          </button>
         </div>
 
-        {/* Recording timer */}
-        {isRecording && (
-          <div className="flex items-center gap-2 text-red-400">
-            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-sm font-mono">{formatTime(recordingTime)}</span>
-          </div>
-        )}
-
-        {/* Volume */}
         <div className="flex items-center gap-2">
-          <svg className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clipRule="evenodd" />
           </svg>
           <input

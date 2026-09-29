@@ -10,7 +10,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
-  transition: background-color 0.3s ease;
 }
 
 /* Custom scrollbar */
@@ -29,43 +28,6 @@ body {
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(124, 58, 237, 0.5);
-}
-
-/* EQ Slider styles */
-.eq-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 4px;
-  background: linear-gradient(to right, #374151, #7c3aed);
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
-}
-
-.eq-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #a855f7, #ec4899);
-  cursor: pointer;
-  box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
-  transition: transform 0.1s;
-}
-
-.eq-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-}
-
-.eq-slider::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #a855f7, #ec4899);
-  cursor: pointer;
-  border: none;
-  box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
 }
 
 /* Volume slider */
@@ -95,18 +57,4 @@ input[type="range"]::-moz-range-thumb {
   background: #7c3aed;
   cursor: pointer;
   border: none;
-}
-
-/* Animations */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(168, 85, 247, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(168, 85, 247, 0.6);
-  }
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s infinite;
 }
