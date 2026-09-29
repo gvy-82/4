@@ -91,9 +91,14 @@ const ALL_STATIONS: RadioStation[] = [
   { id: 84, name: 'Record — Ibiza', url: 'https://radiorecord.hostingradio.ru/ibiza96.aacp', tags: 'ibiza', group: 'record' },
   { id: 85, name: 'Record — 10s Dance', url: 'https://radiorecord.hostingradio.ru/201096.aacp', tags: '2010s', group: 'record' },
   { id: 86, name: 'Record — 70s Dance', url: 'https://radiorecord.hostingradio.ru/197096.aacp', tags: '70s', group: 'record' },
-  // ===== MONTE CARLO (2) =====
+  // ===== MONTE CARLO (7) =====
   { id: 100, name: 'Monte Carlo', url: 'https://montecarlo.hostingradio.ru/montecarlo128.mp3', tags: 'lounge, chillout, jazz', group: 'montecarlo' },
-  { id: 101, name: 'Monte Carlo — Jazz', url: 'https://montecarlo.hostingradio.ru/mcjazz96.aacp', tags: 'jazz, smooth', group: 'montecarlo' },
+  { id: 101, name: 'Monte Carlo — Санкт-Петербург', url: 'https://montecarlo.hostingradio.ru/montecarlo96.aacp', tags: 'lounge, pop, rock, spb', group: 'montecarlo' },
+  { id: 102, name: 'Monte Carlo — Jazz', url: 'https://montecarlo.hostingradio.ru/mcjazz96.aacp', tags: 'jazz, smooth', group: 'montecarlo' },
+  { id: 103, name: 'Monte Carlo — Gold Collection', url: 'https://montecarlo.hostingradio.ru/mcgold96.aacp', tags: 'gold, hits, classics', group: 'montecarlo' },
+  { id: 104, name: 'Monte Carlo — Bossa Nova', url: 'https://mc-mcbossa.hostingradio.ru/mcbossa96.aacp', tags: 'bossa nova, jazz, latin', group: 'montecarlo' },
+  { id: 105, name: 'Monte Carlo — Sweet', url: 'https://montecarlo.hostingradio.ru/mcsweet96.aacp', tags: 'sweet, romantic, chill', group: 'montecarlo' },
+  { id: 106, name: 'Monte Carlo — Golf Club', url: 'https://montecarlo.hostingradio.ru/golfcup96.aacp', tags: 'lounge, easy listening', group: 'montecarlo' },
   // ===== DFM (1) =====
   { id: 110, name: 'DFM', url: 'https://dfm.hostingradio.ru/dfm128.mp3', tags: 'dance, pop, hits', group: 'dfm' },
   // ===== ДРУГИЕ (14) =====
