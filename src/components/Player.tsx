@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { RadioStation } from '../types';
+import { useTheme } from '../App';
 
 interface PlayerProps {
   station: RadioStation | null;
@@ -34,6 +35,7 @@ const Player: React.FC<PlayerProps> = ({
   onVolumeChange,
   audioRef,
 }) => {
+  const { isDark } = useTheme();
   const progressRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,8 +46,12 @@ const Player: React.FC<PlayerProps> = ({
 
   if (!station) {
     return (
-      <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
-        <div className="flex items-center justify-center h-32 text-gray-500">
+      <div className={`rounded-2xl p-6 border transition-colors duration-300 ${
+        isDark
+          ? 'bg-gray-900/80 backdrop-blur-sm border-gray-700/50'
+          : 'bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg'
+      }`}>
+        <div className={`flex items-center justify-center h-32 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
           <p>Выберите станцию для воспроизведения</p>
         </div>
       </div>
@@ -53,7 +59,11 @@ const Player: React.FC<PlayerProps> = ({
   }
 
   return (
-    <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+    <div className={`rounded-2xl p-6 border transition-colors duration-300 ${
+      isDark
+        ? 'bg-gray-900/80 backdrop-blur-sm border-gray-700/50'
+        : 'bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg'
+    }`}>
       {/* Station info */}
       <div className="flex items-center gap-4 mb-4">
         <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -72,8 +82,8 @@ const Player: React.FC<PlayerProps> = ({
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <h2 className="text-white font-bold text-lg truncate">{station.name}</h2>
-          <p className="text-gray-400 text-sm truncate">
+          <h2 className={`font-bold text-lg truncate ${isDark ? 'text-white' : 'text-gray-800'}`}>{station.name}</h2>
+          <p className={`text-sm truncate ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
             {station.country} {station.tags && `• ${station.tags.split(',').slice(0, 2).join(', ')}`}
           </p>
         </div>
@@ -81,20 +91,20 @@ const Player: React.FC<PlayerProps> = ({
 
       {/* Progress/Status bar */}
       <div className="mb-4">
-        <div ref={progressRef} className="h-1 bg-gray-700 rounded-full overflow-hidden">
+        <div ref={progressRef} className={`h-1 rounded-full overflow-hidden ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
           <div
             className={`h-full rounded-full transition-all ${
-              isPlaying ? 'bg-gradient-to-r from-purple-500 to-pink-500 animate-pulse' : 'bg-gray-600'
+              isPlaying ? 'bg-gradient-to-r from-purple-500 to-pink-500 animate-pulse' : 'bg-gray-400'
             }`}
             style={{ width: isPlaying ? '100%' : '0%' }}
           />
         </div>
         <div className="flex justify-between mt-1">
-          <span className="text-xs text-gray-500">
+          <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
             {isPlaying ? '● LIVE' : '○ Пауза'}
           </span>
           {station.bitrate > 0 && (
-            <span className="text-xs text-gray-500">{station.bitrate} kbps</span>
+            <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>{station.bitrate} kbps</span>
           )}
         </div>
       </div>
@@ -124,7 +134,9 @@ const Player: React.FC<PlayerProps> = ({
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
               isRecording
                 ? 'bg-red-600 animate-pulse shadow-lg shadow-red-500/30'
-                : 'bg-gray-700 hover:bg-gray-600'
+                : isDark
+                  ? 'bg-gray-700 hover:bg-gray-600'
+                  : 'bg-gray-200 hover:bg-gray-300'
             }`}
             title={isRecording ? 'Остановить запись' : 'Начать запись'}
           >
@@ -142,7 +154,7 @@ const Player: React.FC<PlayerProps> = ({
 
         {/* Volume */}
         <div className="flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+          <svg className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clipRule="evenodd" />
           </svg>
           <input

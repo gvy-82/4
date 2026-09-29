@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { EQBandConfig } from '../hooks/useAudioEngine';
+import { useTheme } from '../App';
 
 interface EqualizerProps {
   bands: EQBandConfig[];
@@ -20,7 +21,9 @@ const PRESETS: Record<string, number[]> = {
 };
 
 const Equalizer: React.FC<EqualizerProps> = ({ bands, analyserData, onBandChange, onReset }) => {
+  const { isDark } = useTheme();
   const [activePreset, setActivePreset] = useState('Flat');
+
   const getBarHeight = (index: number) => {
     if (!analyserData || analyserData.length === 0) return 0;
     const step = Math.floor(analyserData.length / bands.length);
@@ -40,9 +43,15 @@ const Equalizer: React.FC<EqualizerProps> = ({ bands, analyserData, onBandChange
   };
 
   return (
-    <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+    <div className={`rounded-2xl p-6 border transition-colors duration-300 ${
+      isDark
+        ? 'bg-gray-900/80 backdrop-blur-sm border-gray-700/50'
+        : 'bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg'
+    }`}>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-white font-semibold text-lg flex items-center gap-2">
+        <h3 className={`font-semibold text-lg flex items-center gap-2 ${
+          isDark ? 'text-white' : 'text-gray-800'
+        }`}>
           <svg className="w-5 h-5 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
             <path d="M2 10a2 2 0 012-2h12a2 2 0 012 2v0a2 2 0 01-2 2H4a2 2 0 01-2-2v0z" />
           </svg>
@@ -50,7 +59,11 @@ const Equalizer: React.FC<EqualizerProps> = ({ bands, analyserData, onBandChange
         </h3>
         <button
           onClick={() => { onReset(); setActivePreset('Flat'); }}
-          className="text-xs text-gray-400 hover:text-white px-3 py-1 rounded-full border border-gray-600 hover:border-purple-500 transition-all"
+          className={`text-xs px-3 py-1 rounded-full border transition-all ${
+            isDark
+              ? 'text-gray-400 hover:text-white border-gray-600 hover:border-purple-500'
+              : 'text-gray-500 hover:text-gray-800 border-gray-300 hover:border-purple-500'
+          }`}
         >
           Сброс
         </button>
@@ -65,7 +78,9 @@ const Equalizer: React.FC<EqualizerProps> = ({ bands, analyserData, onBandChange
             className={`px-2 py-1 text-[10px] rounded-full transition-all ${
               activePreset === name
                 ? 'bg-purple-600 text-white'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                : isDark
+                  ? 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-700'
             }`}
           >
             {name}
@@ -107,7 +122,7 @@ const Equalizer: React.FC<EqualizerProps> = ({ bands, analyserData, onBandChange
                 style={{ accentColor: '#7c3aed' }}
               />
             </div>
-            <span className="text-[10px] text-gray-400 mt-1">{band.label}</span>
+            <span className={`text-[10px] mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{band.label}</span>
             <span className="text-[10px] text-purple-400">
               {band.gain > 0 ? '+' : ''}{band.gain.toFixed(1)}
             </span>
