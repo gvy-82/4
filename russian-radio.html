@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russian Radio</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f, #1a1a2e);
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            background: linear-gradient(to right, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .subtitle { text-align: center; color: #9ca3af; margin-bottom: 20px; font-size: 0.9rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        .card {
+            background: rgba(17, 24, 39, 0.8);
+            border-radius: 16px;
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            padding: 20px;
+        }
+        .stations { height: 600px; display: flex; flex-direction: column; }
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+        .filter-btn {
+            padding: 6px 12px;
+            background: #1f2937;
+            border: 1px solid #4b5563;
+            border-radius: 20px;
+            color: #9ca3af;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: #7c3aed;
+            color: white;
+            border-color: #7c3aed;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            background: #1f2937;
+            border: 1px solid #4b5563;
+            border-radius: 8px;
+            color: white;
+            margin-bottom: 15px;
+        }
+        input:focus { outline: none; border-color: #a855f7; }
+        .list { flex: 1; overflow-y: auto; }
+        .list::-webkit-scrollbar { width: 6px; }
+        .list::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radius: 3px; }
+        .station {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 2px;
+            transition: all 0.2s;
+        }
+        .station:hover { background: #1f2937; }
+        .station.active { background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.3); }
+        .icon {
+            width: 36px;
+            height: 36px;
+            background: #374151;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .info { flex: 1; min-width: 0; }
+        .name { font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tags { font-size: 11px; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .badge {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .badge-record { background: #7c3aed; color: white; }
+        .badge-mc { background: #0ea5e9; color: white; }
+        .badge-dfm { background: #f59e0b; color: black; }
+        .badge-other { background: #374151; color: #9ca3af; }
+        .player { display: flex; flex-direction: column; gap: 20px; }
+        .player-info { display: flex; align-items: center; gap: 15px; }
+        .player-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #9333ea, #ec4899);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+        .player-name { font-size: 1.2rem; font-weight: bold; margin-bottom: 4px; }
+        .player-tags { font-size: 13px; color: #9ca3af; }
+        .controls { display: flex; align-items: center; gap: 15px; }
+        button.play-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #9333ea, #ec4899);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        button.play-btn:hover { transform: scale(1.05); }
+        .vol-wrap { display: flex; align-items: center; gap: 8px; flex: 1; }
+        input[type="range"] {
+            flex: 1;
+            height: 4px;
+            -webkit-appearance: none;
+            background: #374151;
+            border-radius: 2px;
+            border: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #a855f7;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .status { font-size: 12px; color: #6b7280; }
+        .status.live { color: #22c55e; }
+        .empty { text-align: center; padding: 40px; color: #6b7280; }
+        .count { color: #9ca3af; font-size: 14px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Russian Radio</h1>
+        <p class="subtitle">Record • Monte Carlo • DFM и другие</p>
+        
+        <div class="grid">
+            <div class="card stations">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <h3>📻 Станции</h3>
+                    <span class="count" id="count">0</span>
+                </div>
+                <div class="filter-bar">
+                    <button class="filter-btn active" data-filter="all">Все</button>
+                    <button class="filter-btn" data-filter="record">🟣 Record</button>
+                    <button class="filter-btn" data-filter="montecarlo">🔵 Monte Carlo</button>
+                    <button class="filter-btn" data-filter="dfm">🟡 DFM</button>
+                    <button class="filter-btn" data-filter="other">⚪ Другие</button>
+                </div>
+                <input type="text" id="search" placeholder="🔍 Поиск...">
+                <div class="list" id="list">
+                    <div class="empty">Загрузка...</div>
+                </div>
+            </div>
+            
+            <div class="card player" id="player">
+                <div class="empty">
+                    <div style="font-size:3rem;margin-bottom:10px">📻</div>
+                    <p>Выберите станцию</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <audio id="audio"></audio>
+    
+    <script>
+        const stations = [
+            // ===== RADIO RECORD =====
+            { id: 1, name: 'Radio Record', url: 'https://radiorecord.hostingradio.ru/rr_main96.aacp', tags: 'dance, electronic', group: 'record' },
+            { id: 2, name: 'Record — Russian Mix', url: 'https://radiorecord.hostingradio.ru/rus96.aacp', tags: 'russian, pop', group: 'record' },
+            { id: 3, name: 'Record — Супердискотека 90-х', url: 'https://radiorecord.hostingradio.ru/sd9096.aacp', tags: '90s, retro, dance', group: 'record' },
+            { id: 4, name: 'Record — Chill-Out', url: 'https://radiorecord.hostingradio.ru/chil96.aacp', tags: 'chillout, lounge', group: 'record' },
+            { id: 5, name: 'Record — Deep', url: 'https://radiorecord.hostingradio.ru/deep96.aacp', tags: 'deep house', group: 'record' },
+            { id: 6, name: 'Record — Megamix', url: 'https://radiorecord.hostingradio.ru/mix96.aacp', tags: 'megamix, dance', group: 'record' },
+            { id: 7, name: 'Record — Rock', url: 'https://radiorecord.hostingradio.ru/rock96.aacp', tags: 'rock', group: 'record' },
+            { id: 8, name: 'Record — Remix', url: 'https://radiorecord.hostingradio.ru/rmx96.aacp', tags: 'remix, dance', group: 'record' },
+            { id: 9, name: 'Record — Pirate Station', url: 'https://radiorecord.hostingradio.ru/ps96.aacp', tags: 'drum and bass, dnb', group: 'record' },
+            { id: 10, name: 'Record — Trancemission', url: 'https://radiorecord.hostingradio.ru/tm96.aacp', tags: 'trance', group: 'record' },
+            { id: 11, name: 'Record — Chill House', url: 'https://radiorecord.hostingradio.ru/chillhouse96.aacp', tags: 'chill, house', group: 'record' },
+            { id: 12, name: 'Record — Big Hits', url: 'https://radiorecord.hostingradio.ru/bighits96.aacp', tags: 'hits, pop', group: 'record' },
+            { id: 13, name: 'Record — Record 80-х', url: 'https://radiorecord.hostingradio.ru/198096.aacp', tags: '80s, retro', group: 'record' },
+            { id: 14, name: 'Record — Рекорд 00-х', url: 'https://radiorecord.hostingradio.ru/200096.aacp', tags: '2000s, retro', group: 'record' },
+            { id: 15, name: 'Record — Phonk', url: 'https://radiorecord.hostingradio.ru/phonk96.aacp', tags: 'phonk', group: 'record' },
+            { id: 16, name: 'Record — Rap Hits', url: 'https://radiorecord.hostingradio.ru/rap96.aacp', tags: 'rap, hip-hop', group: 'record' },
+            { id: 17, name: 'Record — Rap Classics', url: 'https://radiorecord.hostingradio.ru/rapclassics96.aacp', tags: 'rap, classics', group: 'record' },
+            { id: 18, name: 'Record — Techno', url: 'https://radiorecord.hostingradio.ru/techno96.aacp', tags: 'techno', group: 'record' },
+            { id: 19, name: 'Record — Trap', url: 'https://radiorecord.hostingradio.ru/trap96.aacp', tags: 'trap', group: 'record' },
+            { id: 20, name: 'Record — Dubstep', url: 'https://radiorecord.hostingradio.ru/dub96.aacp', tags: 'dubstep', group: 'record' },
+            { id: 21, name: 'Record — Hardstyle', url: 'https://radiorecord.hostingradio.ru/teo96.aacp', tags: 'hardstyle, hard', group: 'record' },
+            { id: 22, name: 'Record — EDM', url: 'https://radiorecord.hostingradio.ru/club96.aacp', tags: 'edm, club', group: 'record' },
+            { id: 23, name: 'Record — House Hits', url: 'https://radiorecord.hostingradio.ru/househits96.aacp', tags: 'house', group: 'record' },
+            { id: 24, name: 'Record — Tech House', url: 'https://radiorecord.hostingradio.ru/techouse96.aacp', tags: 'tech house', group: 'record' },
+            { id: 25, name: 'Record — Lo-Fi', url: 'https://radiorecord.hostingradio.ru/lofi96.aacp', tags: 'lo-fi, chill', group: 'record' },
+            { id: 26, name: 'Record — Synthwave', url: 'https://radiorecord.hostingradio.ru/synth96.aacp', tags: 'synthwave, retro', group: 'record' },
+            { id: 27, name: 'Record — Tropical', url: 'https://radiorecord.hostingradio.ru/trop96.aacp', tags: 'tropical house', group: 'record' },
+            { id: 28, name: 'Record — Eurodance', url: 'https://radiorecord.hostingradio.ru/eurodance96.aacp', tags: 'eurodance, 90s', group: 'record' },
+            { id: 29, name: 'Record — GOA/PSY', url: 'https://radiorecord.hostingradio.ru/goa96.aacp', tags: 'goa, psytrance', group: 'record' },
+            { id: 30, name: 'Record — DnB Classics', url: 'https://radiorecord.hostingradio.ru/drumhits96.aacp', tags: 'dnb, drum and bass', group: 'record' },
+            { id: 31, name: 'Record — Armin van Buuren', url: 'https://radiorecord.hostingradio.ru/armin96.aacp', tags: 'trance, armin', group: 'record' },
+            { id: 32, name: 'Record — Tiesto', url: 'https://radiorecord.hostingradio.ru/tiesto96.aacp', tags: 'trance, tiesto', group: 'record' },
+            { id: 33, name: 'Record — David Guetta', url: 'https://radiorecord.hostingradio.ru/guetta96.aacp', tags: 'edm, guetta', group: 'record' },
+            { id: 34, name: 'Record — Martin Garrix', url: 'https://radiorecord.hostingradio.ru/martingarrix64.aacp', tags: 'edm, garrix', group: 'record' },
+            { id: 35, name: 'Record — A State of Trance', url: 'https://radiorecord.hostingradio.ru/asot64.aacp', tags: 'trance, asot', group: 'record' },
+            { id: 36, name: 'Record — Uplifting', url: 'https://radiorecord.hostingradio.ru/uplift96.aacp', tags: 'uplifting trance', group: 'record' },
+            { id: 37, name: 'Record — Progressive', url: 'https://radiorecord.hostingradio.ru/progr96.aacp', tags: 'progressive', group: 'record' },
+            { id: 38, name: 'Record — Ambient', url: 'https://radiorecord.hostingradio.ru/ambient96.aacp', tags: 'ambient, chill', group: 'record' },
+            { id: 39, name: 'Record — Neurofunk', url: 'https://radiorecord.hostingradio.ru/neurofunk96.aacp', tags: 'neurofunk, dnb', group: 'record' },
+            { id: 40, name: 'Record — Liquid Funk', url: 'https://radiorecord.hostingradio.ru/liquidfunk96.aacp', tags: 'liquid funk, dnb', group: 'record' },
+            { id: 41, name: 'Record — Future Bass', url: 'https://radiorecord.hostingradio.ru/fbass96.aacp', tags: 'future bass', group: 'record' },
+            { id: 42, name: 'Record — Future House', url: 'https://radiorecord.hostingradio.ru/fut96.aacp', tags: 'future house', group: 'record' },
+            { id: 43, name: 'Record — Bass House', url: 'https://radiorecord.hostingradio.ru/jackin96.aacp', tags: 'bass house', group: 'record' },
+            { id: 44, name: 'Record — Breaks', url: 'https://radiorecord.hostingradio.ru/brks96.aacp', tags: 'breaks, breakbeat', group: 'record' },
+            { id: 45, name: 'Record — Jungle', url: 'https://radiorecord.hostingradio.ru/jungle96.aacp', tags: 'jungle', group: 'record' },
+            { id: 46, name: 'Record — Electro', url: 'https://radiorecord.hostingradio.ru/elect96.aacp', tags: 'electro', group: 'record' },
+            { id: 47, name: 'Record — Rave FM', url: 'https://radiorecord.hostingradio.ru/rave96.aacp', tags: 'rave, hard', group: 'record' },
+            { id: 48, name: 'Record — Hard Bass', url: 'https://radiorecord.hostingradio.ru/hbass96.aacp', tags: 'hard bass', group: 'record' },
+            { id: 49, name: 'Record — Russian Gold', url: 'https://radiorecord.hostingradio.ru/russiangold96.aacp', tags: 'russian, gold', group: 'record' },
+            { id: 50, name: 'Record — Руки Вверх!', url: 'https://radiorecord.hostingradio.ru/rv96.aacp', tags: 'russian, pop', group: 'record' },
+            { id: 51, name: 'Record — Нафталин FM', url: 'https://radiorecord.hostingradio.ru/naft96.aacp', tags: 'retro, oldies', group: 'record' },
+            { id: 52, name: 'Record — Медляк FM', url: 'https://radiorecord.hostingradio.ru/mdl96.aacp', tags: 'slow, romantic', group: 'record' },
+            { id: 53, name: 'Record — Party 24/7', url: 'https://radiorecord.hostingradio.ru/party96.aacp', tags: 'party, dance', group: 'record' },
+            { id: 54, name: 'Record — Beach Party', url: 'https://radiorecord.hostingradio.ru/beach64.aacp', tags: 'beach, summer', group: 'record' },
+            { id: 55, name: 'Record — На шашлыки!', url: 'https://radiorecord.hostingradio.ru/nashashlyki96.aacp', tags: 'pop, russian', group: 'record' },
+            { id: 56, name: 'Record — Black Rap', url: 'https://radiorecord.hostingradio.ru/yo96.aacp', tags: 'rap, hip-hop', group: 'record' },
+            { id: 57, name: 'Record — Technopop', url: 'https://radiorecord.hostingradio.ru/technopop96.aacp', tags: 'technopop, electro', group: 'record' },
+            { id: 58, name: 'Record — Dream Dance', url: 'https://radiorecord.hostingradio.ru/dream96.aacp', tags: 'dream, dance', group: 'record' },
+            { id: 59, name: 'Record — Disco/Funk', url: 'https://radiorecord.hostingradio.ru/discofunk96.aacp', tags: 'disco, funk', group: 'record' },
+            { id: 60, name: 'Record — Afro House', url: 'https://radiorecord.hostingradio.ru/afro64.aacp', tags: 'afro house', group: 'record' },
+            { id: 61, name: 'Record — Organic', url: 'https://radiorecord.hostingradio.ru/organic96.aacp', tags: 'organic, deep', group: 'record' },
+            { id: 62, name: 'Record — VIP House', url: 'https://radiorecord.hostingradio.ru/vip96.aacp', tags: 'vip house', group: 'record' },
+            { id: 63, name: 'Record — Workout', url: 'https://radiorecord.hostingradio.ru/workout96.aacp', tags: 'workout, sport', group: 'record' },
+            { id: 64, name: 'Record — Latina Dance', url: 'https://radiorecord.hostingradio.ru/latina96.aacp', tags: 'latina, reggaeton', group: 'record' },
+            { id: 65, name: 'Record — Reggae', url: 'https://radiorecord.hostingradio.ru/reggae96.aacp', tags: 'reggae', group: 'record' },
+            { id: 66, name: 'Record — Darkside', url: 'https://radiorecord.hostingradio.ru/darkside96.aacp', tags: 'dark, techno', group: 'record' },
+            { id: 67, name: 'Record — Future Rave', url: 'https://radiorecord.hostingradio.ru/futurerave96.aacp', tags: 'future rave', group: 'record' },
+            { id: 68, name: 'Record — Minimal/Tech', url: 'https://radiorecord.hostingradio.ru/mini96.aacp', tags: 'minimal, tech', group: 'record' },
+            { id: 69, name: 'Record — Dream Pop', url: 'https://radiorecord.hostingradio.ru/dreampop96.aacp', tags: 'dream pop', group: 'record' },
+            { id: 70, name: 'Record — Moombahton', url: 'https://radiorecord.hostingradio.ru/mmbt96.aacp', tags: 'moombahton', group: 'record' },
+            { id: 71, name: 'Record — Midtempo', url: 'https://radiorecord.hostingradio.ru/mt96.aacp', tags: 'midtempo', group: 'record' },
+            { id: 72, name: 'Record — Trance Classics', url: 'https://radiorecord.hostingradio.ru/trancehits96.aacp', tags: 'trance, classics', group: 'record' },
+            { id: 73, name: 'Record — Trancehouse', url: 'https://radiorecord.hostingradio.ru/trancehouse96.aacp', tags: 'trance, house', group: 'record' },
+            { id: 74, name: 'Record — House Classics', url: 'https://radiorecord.hostingradio.ru/houseclss96.aacp', tags: 'house, classics', group: 'record' },
+            { id: 75, name: 'Record — EDM Classics', url: 'https://radiorecord.hostingradio.ru/edmhits96.aacp', tags: 'edm, classics', group: 'record' },
+            { id: 76, name: 'Record — Lo-Fi House', url: 'https://radiorecord.hostingradio.ru/lofihouse64.aacp', tags: 'lo-fi, house', group: 'record' },
+            { id: 77, name: 'Record — Summer Lounge', url: 'https://radiorecord.hostingradio.ru/summerlounge64.aacp', tags: 'summer, lounge', group: 'record' },
+            { id: 78, name: 'Record — На Хайпе', url: 'https://radiorecord.hostingradio.ru/hype96.aacp', tags: 'hype, hits', group: 'record' },
+            { id: 79, name: 'Record — Kolbasny Tsekh', url: 'https://radiorecord.hostingradio.ru/pump96.aacp', tags: 'hard, pump', group: 'record' },
+            { id: 80, name: 'Record — Tecktonik', url: 'https://radiorecord.hostingradio.ru/tecktonik96.aacp', tags: 'tecktonik, electro', group: 'record' },
+            { id: 81, name: 'Record — Symphonia FM', url: 'https://radiorecord.hostingradio.ru/symph96.aacp', tags: 'symphonic, classic', group: 'record' },
+            { id: 82, name: 'Record — TOP 100 EDM', url: 'https://radiorecord.hostingradio.ru/top100edm96.aacp', tags: 'top, edm', group: 'record' },
+            { id: 83, name: 'Record — Gold', url: 'https://radiorecord.hostingradio.ru/gold96.aacp', tags: 'gold, hits', group: 'record' },
+            { id: 84, name: 'Record — Innocence (Ibiza)', url: 'https://radiorecord.hostingradio.ru/ibiza96.aacp', tags: 'ibiza, chill', group: 'record' },
+            { id: 85, name: 'Record — 10s Dance', url: 'https://radiorecord.hostingradio.ru/201096.aacp', tags: '2010s, dance', group: 'record' },
+            { id: 86, name: 'Record — 70s Dance', url: 'https://radiorecord.hostingradio.ru/197096.aacp', tags: '70s, disco', group: 'record' },
+            
+            // ===== MONTE CARLO =====
+            { id: 100, name: 'Monte Carlo', url: 'https://montecarlo.hostingradio.ru/montecarlo128.mp3', tags: 'lounge, chillout, jazz', group: 'montecarlo' },
+            { id: 101, name: 'Monte Carlo — Санкт-Петербург', url: 'https://montecarlo.hostingradio.ru/montecarlo96.aacp', tags: 'lounge, pop, rock, spb', group: 'montecarlo' },
+            { id: 102, name: 'Monte Carlo — Jazz', url: 'https://montecarlo.hostingradio.ru/mcjazz96.aacp', tags: 'jazz, smooth', group: 'montecarlo' },
+            { id: 103, name: 'Monte Carlo — Gold Collection', url: 'https://montecarlo.hostingradio.ru/mcgold96.aacp', tags: 'gold, hits, classics', group: 'montecarlo' },
+            { id: 104, name: 'Monte Carlo — Bossa Nova', url: 'https://mc-mcbossa.hostingradio.ru/mcbossa96.aacp', tags: 'bossa nova, jazz, latin', group: 'montecarlo' },
+            { id: 105, name: 'Monte Carlo — Sweet', url: 'https://montecarlo.hostingradio.ru/mcsweet96.aacp', tags: 'sweet, romantic, chill', group: 'montecarlo' },
+            { id: 106, name: 'Monte Carlo — Golf Club', url: 'https://montecarlo.hostingradio.ru/golfcup96.aacp', tags: 'lounge, easy listening', group: 'montecarlo' },
+            
+            // ===== DFM =====
+            { id: 110, name: 'DFM', url: 'https://dfm.hostingradio.ru/dfm128.mp3', tags: 'dance, pop, hits', group: 'dfm' },
+            
+            // ===== ДРУГИЕ =====
+            { id: 200, name: 'Русское Радио', url: 'https://rusradio.hostingradio.ru/rusradio128.mp3', tags: 'pop, russian', group: 'other' },
+            { id: 201, name: 'Европа Плюс', url: 'https://ep256.hostingradio.ru:8052/europaplus256.mp3', tags: 'pop, hit', group: 'other' },
+            { id: 202, name: 'Ретро ФМ', url: 'https://retroserver.streamr.ru:8043/retro256.mp3', tags: 'retro, 70s, 80s, 90s', group: 'other' },
+            { id: 203, name: 'Наше Радио', url: 'https://nashe1.hostingradio.ru/nashe-256', tags: 'rock, russian', group: 'other' },
+            { id: 204, name: 'Авторадио', url: 'https://cast.fmprod.ru:8443/avto_256', tags: 'pop, russian', group: 'other' },
+            { id: 205, name: 'Love Radio', url: 'https://microitv1.hostingradio.ru:8016/loveradio', tags: 'pop, love', group: 'other' },
+            { id: 206, name: 'Хит FM', url: 'https://hitfm.hostingradio.ru/hitfm128.mp3', tags: 'pop, hit', group: 'other' },
+            { id: 207, name: 'Радиоmaximum', url: 'https://maximum.hostingradio.ru/maximum128.mp3', tags: 'rock', group: 'other' },
+            { id: 208, name: 'Радио Шансон', url: 'https://chanson.hostingradio.ru:8041/shanson128.mp3', tags: 'chanson, russian', group: 'other' },
+            { id: 209, name: 'Comedy Radio', url: 'https://comedy.hostingradio.ru/comedy128.mp3', tags: 'pop, humor', group: 'other' },
+            { id: 210, name: 'Rock FM', url: 'https://rockfm.hostingradio.ru/rockfm128.mp3', tags: 'rock', group: 'other' },
+            { id: 211, name: 'Radio ENERGY', url: 'https://energy.hostingradio.ru/energy128.mp3', tags: 'dance, pop', group: 'other' },
+            { id: 212, name: 'Радио Дача', url: 'https://cast.fmprod.ru:8443/radiodacha_256', tags: 'pop, russian', group: 'other' },
+            { id: 213, name: 'Новое Радио', url: 'https://cast.fmprod.ru:8443/novoeradio_256', tags: 'pop, russian', group: 'other' },
+        ];
+        
+        let current = null;
+        let playing = false;
+        let currentFilter = 'all';
+        const audio = document.getElementById('audio');
+        
+        function getBadge(group) {
+            switch(group) {
+                case 'record': return '<span class="badge badge-record">RECORD</span>';
+                case 'montecarlo': return '<span class="badge badge-mc">MC</span>';
+                case 'dfm': return '<span class="badge badge-dfm">DFM</span>';
+                default: return '<span class="badge badge-other">FM</span>';
+            }
+        }
+        
+        function getIcon(group) {
+            switch(group) {
+                case 'record': return '🟣';
+                case 'montecarlo': return '🔵';
+                case 'dfm': return '🟡';
+                default: return '📻';
+            }
+        }
+        
+        function filter() {
+            const q = document.getElementById('search').value.toLowerCase();
+            return stations.filter(s => {
+                const matchFilter = currentFilter === 'all' || s.group === currentFilter;
+                const matchSearch = !q || s.name.toLowerCase().includes(q) || s.tags.toLowerCase().includes(q);
+                return matchFilter && matchSearch;
+            });
+        }
+        
+        function render() {
+            const list = filter();
+            document.getElementById('count').textContent = list.length + ' / ' + stations.length;
+            const container = document.getElementById('list');
+            
+            if (list.length === 0) {
+                container.innerHTML = '<div class="empty">Ничего не найдено</div>';
+                return;
+            }
+            
+            container.innerHTML = list.map(s => `
+                <div class="station ${current && current.id === s.id ? 'active' : ''}" data-id="${s.id}">
+                    <div class="icon">${getIcon(s.group)}</div>
+                    <div class="info">
+                        <div class="name">${s.name}</div>
+                        <div class="tags">${s.tags}</div>
+                    </div>
+                    ${getBadge(s.group)}
+                </div>
+            `).join('');
+            
+            container.querySelectorAll('.station').forEach(el => {
+                el.onclick = () => {
+                    const id = parseInt(el.dataset.id);
+                    const station = stations.find(s => s.id === id);
+                    if (station) select(station);
+                };
+            });
+        }
+        
+        function select(station) {
+            current = station;
+            render();
+            showPlayer();
+            play();
+        }
+        
+        function showPlayer() {
+            if (!current) return;
+            
+            document.getElementById('player').innerHTML = `
+                <div class="player-info">
+                    <div class="player-icon">${getIcon(current.group)}</div>
+                    <div style="min-width:0;flex:1">
+                        <div class="player-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${current.name}</div>
+                        <div class="player-tags">${current.tags}</div>
+                    </div>
+                </div>
+                <div class="controls">
+                    <button class="play-btn" id="btn">${playing ? '⏸' : '▶'}</button>
+                    <div class="vol-wrap">
+                        <span style="font-size:12px">🔊</span>
+                        <input type="range" id="vol" min="0" max="1" step="0.01" value="${audio.volume}">
+                    </div>
+                </div>
+                <div class="status ${playing ? 'live' : ''}">${playing ? '● LIVE — играет' : '○ Пауза'}</div>
+            `;
+            
+            document.getElementById('btn').onclick = toggle;
+            document.getElementById('vol').oninput = (e) => audio.volume = e.target.value;
+        }
+        
+        function play() {
+            if (!current) return;
+            audio.src = current.url;
+            audio.play().then(() => {
+                playing = true;
+                showPlayer();
+            }).catch(err => {
+                console.error('Play error:', err);
+                // Пробуем через CORS proxy
+                audio.src = 'https://corsproxy.io/?' + encodeURIComponent(current.url);
+                audio.play().then(() => {
+                    playing = true;
+                    showPlayer();
+                }).catch(() => {
+                    alert('Не удалось воспроизвести: ' + current.name);
+                });
+            });
+        }
+        
+        function toggle() {
+            if (playing) {
+                audio.pause();
+                playing = false;
+            } else {
+                audio.play();
+                playing = true;
+            }
+            showPlayer();
+        }
+        
+        // Фильтры
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                render();
+            };
+        });
+        
+        // Поиск
+        document.getElementById('search').oninput = () => render();
+        
+        // Запуск
+        render();
+        console.log('✅ Загружено станций:', stations.length);
+    </script>
+</body>
+</html>
