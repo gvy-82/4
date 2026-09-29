@@ -3,572 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Russian Radio - Онлайн Радио России</title>
-    <meta name="description" content="Слушайте российские радиостанции онлайн">
+    <title>Russian Radio</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f, #1a1a2e);
             min-height: 100vh;
             color: white;
-        }
-        
-        .container {
-            max-width: 1024px;
-            margin: 0 auto;
             padding: 20px;
         }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
+        .container { max-width: 1000px; margin: 0 auto; }
         h1 {
+            text-align: center;
             font-size: 2rem;
-            background: linear-gradient(to right, #a855f7, #ec4899, #3b82f6);
+            background: linear-gradient(to right, #a855f7, #ec4899);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
+            margin-bottom: 10px;
         }
-        
-        .subtitle {
-            color: #9ca3af;
-            font-size: 0.875rem;
-            margin-top: 5px;
-        }
-        
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        
-        @media (max-width: 768px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
+        .subtitle { text-align: center; color: #9ca3af; margin-bottom: 30px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
         .card {
             background: rgba(17, 24, 39, 0.8);
-            backdrop-filter: blur(10px);
             border-radius: 16px;
             border: 1px solid rgba(75, 85, 99, 0.5);
             padding: 20px;
         }
-        
-        .stations-list {
-            height: 600px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .search-input {
+        .stations { height: 500px; display: flex; flex-direction: column; }
+        input {
             width: 100%;
-            padding: 10px 15px;
+            padding: 10px;
             background: #1f2937;
             border: 1px solid #4b5563;
             border-radius: 8px;
             color: white;
-            font-size: 14px;
             margin-bottom: 15px;
         }
-        
-        .search-input:focus {
-            outline: none;
-            border-color: #a855f7;
-        }
-        
-        .stations-scroll {
-            flex: 1;
-            overflow-y: auto;
-        }
-        
-        .stations-scroll::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .stations-scroll::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        .stations-scroll::-webkit-scrollbar-thumb {
-            background: rgba(168, 85, 247, 0.3);
-            border-radius: 3px;
-        }
-        
-        .station-item {
+        input:focus { outline: none; border-color: #a855f7; }
+        .list { flex: 1; overflow-y: auto; }
+        .list::-webkit-scrollbar { width: 6px; }
+        .list::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radius: 3px; }
+        .station {
             display: flex;
             align-items: center;
             gap: 12px;
             padding: 12px;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid transparent;
             margin-bottom: 4px;
+            transition: all 0.2s;
         }
-        
-        .station-item:hover {
-            background: #1f2937;
-        }
-        
-        .station-item.active {
-            background: rgba(168, 85, 247, 0.2);
-            border-color: rgba(168, 85, 247, 0.5);
-        }
-        
-        .station-icon {
+        .station:hover { background: #1f2937; }
+        .station.active { background: rgba(168, 85, 247, 0.2); }
+        .icon {
             width: 40px;
             height: 40px;
-            border-radius: 8px;
             background: #374151;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
-            overflow: hidden;
+            font-size: 1.5rem;
         }
-        
-        .station-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .station-info {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .station-name {
-            font-size: 14px;
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .station-tags {
-            font-size: 12px;
-            color: #9ca3af;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .player {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .player-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
+        .info { flex: 1; }
+        .name { font-weight: 500; margin-bottom: 2px; }
+        .tags { font-size: 12px; color: #9ca3af; }
+        .player { display: flex; flex-direction: column; gap: 20px; }
+        .player-info { display: flex; align-items: center; gap: 15px; }
         .player-icon {
             width: 60px;
             height: 60px;
-            border-radius: 12px;
             background: linear-gradient(135deg, #9333ea, #ec4899);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 2rem;
-            flex-shrink: 0;
         }
-        
-        .player-details {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .player-name {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-        
-        .player-tags {
-            font-size: 14px;
-            color: #9ca3af;
-        }
-        
-        .progress-bar {
-            height: 4px;
-            background: #374151;
-            border-radius: 2px;
-            overflow: hidden;
-            margin-bottom: 10px;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(to right, #a855f7, #ec4899);
-            width: 0%;
-            transition: width 0.3s;
-        }
-        
-        .progress-fill.playing {
-            width: 100%;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        .status {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #6b7280;
-            margin-bottom: 20px;
-        }
-        
-        .controls {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .play-button {
+        .player-name { font-size: 1.2rem; font-weight: bold; }
+        .controls { display: flex; align-items: center; gap: 15px; }
+        button {
             width: 50px;
             height: 50px;
             border-radius: 50%;
             background: linear-gradient(135deg, #9333ea, #ec4899);
             border: none;
+            color: white;
+            font-size: 1.5rem;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s;
-            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
         }
-        
-        .play-button:hover {
-            transform: scale(1.05);
-        }
-        
-        .play-button svg {
-            width: 20px;
-            height: 20px;
-            fill: white;
-        }
-        
-        .volume-control {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .volume-slider {
-            width: 100px;
+        button:hover { transform: scale(1.05); }
+        input[type="range"] {
+            flex: 1;
             height: 4px;
             -webkit-appearance: none;
-            appearance: none;
             background: #374151;
             border-radius: 2px;
-            outline: none;
+            border: none;
         }
-        
-        .volume-slider::-webkit-slider-thumb {
+        input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            appearance: none;
             width: 12px;
             height: 12px;
-            border-radius: 50%;
             background: #a855f7;
+            border-radius: 50%;
             cursor: pointer;
         }
-        
-        .loading {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            gap: 15px;
-        }
-        
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(168, 85, 247, 0.3);
-            border-top-color: #a855f7;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .empty-state {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #6b7280;
-        }
-        
-        footer {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 12px;
-            color: #6b7280;
-        }
+        .status { font-size: 12px; color: #6b7280; margin-top: 10px; }
+        .empty { text-align: center; padding: 40px; color: #6b7280; }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>🎵 Russian Radio</h1>
-            <p class="subtitle">Радиостанции России</p>
-        </header>
+        <h1>🎵 Russian Radio</h1>
+        <p class="subtitle">Радиостанции России</p>
         
         <div class="grid">
-            <div class="card stations-list">
-                <h3 style="margin-bottom: 15px; font-size: 18px;">📻 Станции (<span id="stationCount">0</span>)</h3>
-                <input type="text" class="search-input" id="searchInput" placeholder="Поиск станции...">
-                <div class="stations-scroll" id="stationsList">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <div>Загрузка станций...</div>
-                    </div>
+            <div class="card stations">
+                <h3 style="margin-bottom: 15px;">📻 Станции (<span id="count">0</span>)</h3>
+                <input type="text" id="search" placeholder="Поиск...">
+                <div class="list" id="list">
+                    <div class="empty">Загрузка...</div>
                 </div>
             </div>
             
             <div class="card player" id="player">
-                <div class="empty-state">
-                    <p>Выберите станцию</p>
-                </div>
+                <div class="empty">Выберите станцию</div>
             </div>
         </div>
-        
-        <footer>
-            <p>Радиостанции предоставлены Radio Browser API</p>
-        </footer>
     </div>
     
-    <audio id="audioPlayer" preload="none"></audio>
+    <audio id="audio"></audio>
     
     <script>
-        const API_BASE = 'https://de1.api.radio-browser.info/json';
-        let stations = [];
-        let currentStation = null;
-        let isPlaying = false;
-        const audio = document.getElementById('audioPlayer');
+        const stations = [
+            { id: 1, name: 'Русское Радио', url: 'https://rusradio.hostingradio.ru/rusradio128.mp3', tags: 'pop' },
+            { id: 2, name: 'Европа Плюс', url: 'https://ep256.hostingradio.ru:8052/europaplus256.mp3', tags: 'pop,hit' },
+            { id: 3, name: 'Ретро ФМ', url: 'https://retroserver.streamr.ru:8043/retro256.mp3', tags: 'retro' },
+            { id: 4, name: 'Наше Радио', url: 'https://nashe1.hostingradio.ru/nashe-256', tags: 'rock' },
+            { id: 5, name: 'Радио Рекорд', url: 'https://radiorecord.hostingradio.ru/rr_320.mp3', tags: 'dance' },
+            { id: 6, name: 'Авторадио', url: 'https://cast.fmprod.ru:8443/avto_256', tags: 'pop' },
+            { id: 7, name: 'Радио Дача', url: 'https://cast.fmprod.ru:8443/radiodacha_256', tags: 'pop' },
+            { id: 8, name: 'Love Radio', url: 'https://microitv1.hostingradio.ru:8016/loveradio', tags: 'pop' },
+            { id: 9, name: 'Хит FM', url: 'https://hitfm.hostingradio.ru/hitfm128.mp3', tags: 'hit' },
+            { id: 10, name: 'DFM', url: 'https://dfm.hostingradio.ru/dfm128.mp3', tags: 'dance' },
+            { id: 11, name: 'Радиоmaximum', url: 'https://maximum.hostingradio.ru/maximum128.mp3', tags: 'rock' },
+            { id: 12, name: 'Radio Monte Carlo', url: 'https://montecarlo.hostingradio.ru/montecarlo128.mp3', tags: 'lounge' },
+            { id: 13, name: 'Радио Шансон', url: 'https://chanson.hostingradio.ru:8041/shanson128.mp3', tags: 'chanson' },
+            { id: 14, name: 'Comedy Radio', url: 'https://comedy.hostingradio.ru/comedy128.mp3', tags: 'pop' },
+            { id: 15, name: 'Новое Радио', url: 'https://cast.fmprod.ru:8443/novoeradio_256', tags: 'pop' },
+            { id: 16, name: 'Радио ENERGY', url: 'https://energy.hostingradio.ru/energy128.mp3', tags: 'dance' },
+            { id: 17, name: 'Радио Jazz', url: 'https://cast.fmprod.ru:8443/radiojazz_256', tags: 'jazz' },
+            { id: 18, name: 'Rock FM', url: 'https://rockfm.hostingradio.ru/rockfm128.mp3', tags: 'rock' },
+            { id: 19, name: 'Радио МИР', url: 'https://cast.fmprod.ru:8443/mir_256', tags: 'pop' },
+            { id: 20, name: 'Радио Книга', url: 'https://cast.fmprod.ru:8443/radiokniga_256', tags: 'talk' }
+        ];
         
-        // Встроенный список российских радиостанций (на случай если API не работает)
-        function getBuiltinStations() {
-            return [
-                { stationuuid: '1', name: 'Русское Радио', url: 'https://rusradio.hostingradio.ru/rusradio128.mp3', url_resolved: 'https://rusradio.hostingradio.ru/rusradio128.mp3', favicon: '', tags: 'pop,russian', bitrate: 128, country: 'Russia' },
-                { stationuuid: '2', name: 'Европа Плюс', url: 'https://ep256.hostingradio.ru:8052/europaplus256.mp3', url_resolved: 'https://ep256.hostingradio.ru:8052/europaplus256.mp3', favicon: '', tags: 'pop,hit', bitrate: 256, country: 'Russia' },
-                { stationuuid: '3', name: 'Ретро ФМ', url: 'https://retroserver.streamr.ru:8043/retro256.mp3', url_resolved: 'https://retroserver.streamr.ru:8043/retro256.mp3', favicon: '', tags: 'retro,70s,80s,90s', bitrate: 256, country: 'Russia' },
-                { stationuuid: '4', name: 'Наше Радио', url: 'https://nashe1.hostingradio.ru/nashe-256', url_resolved: 'https://nashe1.hostingradio.ru/nashe-256', favicon: '', tags: 'rock,russian', bitrate: 256, country: 'Russia' },
-                { stationuuid: '5', name: 'Радио Рекорд', url: 'https://radiorecord.hostingradio.ru/rr_320.mp3', url_resolved: 'https://radiorecord.hostingradio.ru/rr_320.mp3', favicon: '', tags: 'dance,electronic', bitrate: 320, country: 'Russia' },
-                { stationuuid: '6', name: 'Авторадио', url: 'https://cast.fmprod.ru:8443/avto_256', url_resolved: 'https://cast.fmprod.ru:8443/avto_256', favicon: '', tags: 'pop,russian', bitrate: 256, country: 'Russia' },
-                { stationuuid: '7', name: 'Радио Дача', url: 'https://cast.fmprod.ru:8443/radiodacha_256', url_resolved: 'https://cast.fmprod.ru:8443/radiodacha_256', favicon: '', tags: 'pop,russian', bitrate: 256, country: 'Russia' },
-                { stationuuid: '8', name: 'Love Radio', url: 'https://microitv1.hostingradio.ru:8016/loveradio', url_resolved: 'https://microitv1.hostingradio.ru:8016/loveradio', favicon: '', tags: 'pop,love', bitrate: 128, country: 'Russia' },
-                { stationuuid: '9', name: 'Хит FM', url: 'https://hitfm.hostingradio.ru/hitfm128.mp3', url_resolved: 'https://hitfm.hostingradio.ru/hitfm128.mp3', favicon: '', tags: 'pop,hit', bitrate: 128, country: 'Russia' },
-                { stationuuid: '10', name: 'DFM', url: 'https://dfm.hostingradio.ru/dfm128.mp3', url_resolved: 'https://dfm.hostingradio.ru/dfm128.mp3', favicon: '', tags: 'dance,pop', bitrate: 128, country: 'Russia' },
-                { stationuuid: '11', name: 'Радиоmaximum', url: 'https://maximum.hostingradio.ru/maximum128.mp3', url_resolved: 'https://maximum.hostingradio.ru/maximum128.mp3', favicon: '', tags: 'rock', bitrate: 128, country: 'Russia' },
-                { stationuuid: '12', name: 'Radio Monte Carlo', url: 'https://montecarlo.hostingradio.ru/montecarlo128.mp3', url_resolved: 'https://montecarlo.hostingradio.ru/montecarlo128.mp3', favicon: '', tags: 'lounge,chillout', bitrate: 128, country: 'Russia' },
-                { stationuuid: '13', name: 'Радио Шансон', url: 'https://chanson.hostingradio.ru:8041/shanson128.mp3', url_resolved: 'https://chanson.hostingradio.ru:8041/shanson128.mp3', favicon: '', tags: 'chanson,russian', bitrate: 128, country: 'Russia' },
-                { stationuuid: '14', name: 'Comedy Radio', url: 'https://comedy.hostingradio.ru/comedy128.mp3', url_resolved: 'https://comedy.hostingradio.ru/comedy128.mp3', favicon: '', tags: 'pop,humor', bitrate: 128, country: 'Russia' },
-                { stationuuid: '15', name: 'Новое Радио', url: 'https://cast.fmprod.ru:8443/novoeradio_256', url_resolved: 'https://cast.fmprod.ru:8443/novoeradio_256', favicon: '', tags: 'pop,russian', bitrate: 256, country: 'Russia' },
-                { stationuuid: '16', name: 'Радио ENERGY', url: 'https://energy.hostingradio.ru/energy128.mp3', url_resolved: 'https://energy.hostingradio.ru/energy128.mp3', favicon: '', tags: 'dance,pop', bitrate: 128, country: 'Russia' },
-                { stationuuid: '17', name: 'Радио Jazz', url: 'https://cast.fmprod.ru:8443/radiojazz_256', url_resolved: 'https://cast.fmprod.ru:8443/radiojazz_256', favicon: '', tags: 'jazz', bitrate: 256, country: 'Russia' },
-                { stationuuid: '18', name: 'Rock FM', url: 'https://rockfm.hostingradio.ru/rockfm128.mp3', url_resolved: 'https://rockfm.hostingradio.ru/rockfm128.mp3', favicon: '', tags: 'rock', bitrate: 128, country: 'Russia' },
-                { stationuuid: '19', name: 'Радио МИР', url: 'https://cast.fmprod.ru:8443/mir_256', url_resolved: 'https://cast.fmprod.ru:8443/mir_256', favicon: '', tags: 'pop,russian', bitrate: 256, country: 'Russia' },
-                { stationuuid: '20', name: 'Радио Книга', url: 'https://cast.fmprod.ru:8443/radiokniga_256', url_resolved: 'https://cast.fmprod.ru:8443/radiokniga_256', favicon: '', tags: 'audiobook,talk', bitrate: 256, country: 'Russia' }
-            ];
-        }
+        let current = null;
+        let playing = false;
+        const audio = document.getElementById('audio');
         
-        // Загрузка станций
-        function loadStations() {
-            console.log('🚀 Загружаем станции...');
-            
-            // Используем встроенный список станций
-            stations = getBuiltinStations();
-            
-            console.log(`✅ Загружено станций: ${stations.length}`);
-            
-            if (stations.length === 0) {
-                document.getElementById('stationsList').innerHTML = '<div class="empty-state"><p>Не удалось загрузить станции.</p></div>';
-            } else {
-                renderStations(stations);
-            }
-        }
-        
-        // Отрисовка списка станций
-        function renderStations(list) {
-            document.getElementById('stationCount').textContent = list.length;
-            const container = document.getElementById('stationsList');
+        function render(list) {
+            document.getElementById('count').textContent = list.length;
+            const container = document.getElementById('list');
             
             if (list.length === 0) {
-                container.innerHTML = '<div class="empty-state"><p>Станции не найдены</p></div>';
+                container.innerHTML = '<div class="empty">Ничего не найдено</div>';
                 return;
             }
             
-            container.innerHTML = list.map(station => `
-                <div class="station-item ${currentStation?.stationuuid === station.stationuuid ? 'active' : ''}" 
-                     data-id="${station.stationuuid}">
-                    <div class="station-icon">
-                        ${station.favicon ? `<img src="${station.favicon}" onerror="this.style.display='none';this.parentElement.innerHTML='📻'">` : '📻'}
-                    </div>
-                    <div class="station-info">
-                        <div class="station-name">${station.name}</div>
-                        <div class="station-tags">
-                            ${station.tags ? station.tags.split(',').slice(0, 2).join(', ') : 'Радио'}
-                            ${station.bitrate > 0 ? ` • ${station.bitrate}kbps` : ''}
-                        </div>
+            container.innerHTML = list.map(s => `
+                <div class="station ${current && current.id === s.id ? 'active' : ''}" data-id="${s.id}">
+                    <div class="icon">📻</div>
+                    <div class="info">
+                        <div class="name">${s.name}</div>
+                        <div class="tags">${s.tags}</div>
                     </div>
                 </div>
             `).join('');
             
-            // Добавляем обработчики кликов
-            container.querySelectorAll('.station-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    const id = item.dataset.id;
-                    const station = stations.find(s => s.stationuuid === id);
-                    if (station) selectStation(station);
-                });
+            container.querySelectorAll('.station').forEach(el => {
+                el.onclick = () => {
+                    const id = parseInt(el.dataset.id);
+                    const station = stations.find(s => s.id === id);
+                    if (station) select(station);
+                };
             });
         }
         
-        // Выбор станции
-        function selectStation(station) {
-            currentStation = station;
-            renderStations(filterStations());
-            renderPlayer();
-            playStation();
+        function select(station) {
+            current = station;
+            render(filter());
+            showPlayer();
+            play();
         }
         
-        // Отрисовка плеера
-        function renderPlayer() {
-            if (!currentStation) return;
+        function showPlayer() {
+            if (!current) return;
             
-            const player = document.getElementById('player');
-            player.innerHTML = `
+            document.getElementById('player').innerHTML = `
                 <div class="player-info">
                     <div class="player-icon">📻</div>
-                    <div class="player-details">
-                        <div class="player-name">${currentStation.name}</div>
-                        <div class="player-tags">${currentStation.tags ? currentStation.tags.split(',').slice(0, 2).join(', ') : ''}</div>
+                    <div>
+                        <div class="player-name">${current.name}</div>
+                        <div class="tags">${current.tags}</div>
                     </div>
                 </div>
-                
-                <div>
-                    <div class="progress-bar">
-                        <div class="progress-fill ${isPlaying ? 'playing' : ''}"></div>
-                    </div>
-                    <div class="status">
-                        <span>${isPlaying ? '● LIVE' : '○ Пауза'}</span>
-                        <span>${currentStation.bitrate > 0 ? currentStation.bitrate + ' kbps' : ''}</span>
-                    </div>
-                </div>
-                
                 <div class="controls">
-                    <button class="play-button" id="playBtn">
-                        ${isPlaying ? `
-                            <svg viewBox="0 0 20 20">
-                                <path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"/>
-                            </svg>
-                        ` : `
-                            <svg viewBox="0 0 20 20">
-                                <path d="M6 4l10 6-10 6V4z"/>
-                            </svg>
-                        `}
-                    </button>
-                    
-                    <div class="volume-control">
-                        <svg width="16" height="16" viewBox="0 0 20 20" fill="#9ca3af">
-                            <path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217z"/>
-                        </svg>
-                        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="${audio.volume}">
-                    </div>
+                    <button id="btn">${playing ? '⏸' : '▶'}</button>
+                    <input type="range" id="vol" min="0" max="1" step="0.01" value="${audio.volume}">
                 </div>
+                <div class="status">${playing ? '● LIVE' : '○ Пауза'}</div>
             `;
             
-            document.getElementById('playBtn').addEventListener('click', togglePlay);
-            document.getElementById('volumeSlider').addEventListener('input', (e) => {
-                audio.volume = e.target.value;
-            });
+            document.getElementById('btn').onclick = toggle;
+            document.getElementById('vol').oninput = (e) => audio.volume = e.target.value;
         }
         
-        // Воспроизведение
-        function playStation() {
-            if (!currentStation) return;
-            
-            const url = currentStation.url_resolved || currentStation.url;
-            audio.src = url;
+        function play() {
+            if (!current) return;
+            audio.src = current.url;
             audio.play().then(() => {
-                isPlaying = true;
-                renderPlayer();
-            }).catch(() => {
-                // Пробуем через CORS proxy
-                audio.src = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-                audio.play().then(() => {
-                    isPlaying = true;
-                    renderPlayer();
-                }).catch(() => {
-                    alert('Не удалось воспроизвести эту станцию');
-                });
-            });
+                playing = true;
+                showPlayer();
+            }).catch(() => alert('Не удалось воспроизвести'));
         }
         
-        // Переключение воспроизведения
-        function togglePlay() {
-            if (isPlaying) {
+        function toggle() {
+            if (playing) {
                 audio.pause();
-                isPlaying = false;
+                playing = false;
             } else {
                 audio.play();
-                isPlaying = true;
+                playing = true;
             }
-            renderPlayer();
+            showPlayer();
         }
         
-        // Фильтрация станций
-        function filterStations() {
-            const query = document.getElementById('searchInput').value.toLowerCase().trim();
-            if (!query) return stations;
-            
-            return stations.filter(s => {
-                const name = (s.name || '').toLowerCase();
-                const tags = (s.tags || '').toLowerCase();
-                const country = (s.country || '').toLowerCase();
-                
-                return name.includes(query) || 
-                       tags.includes(query) || 
-                       country.includes(query);
-            });
+        function filter() {
+            const q = document.getElementById('search').value.toLowerCase();
+            if (!q) return stations;
+            return stations.filter(s => 
+                s.name.toLowerCase().includes(q) || 
+                s.tags.toLowerCase().includes(q)
+            );
         }
         
-        // Обработчик поиска
-        document.getElementById('searchInput').addEventListener('input', () => {
-            renderStations(filterStations());
-        });
-        
-        // Делаем функцию доступной глобально для кнопки "Повторить"
-        window.loadStations = loadStations;
+        document.getElementById('search').oninput = () => render(filter());
         
         // Запуск
-        console.log('🚀 Запуск приложения...');
-        loadStations();
+        render(stations);
+        console.log('✅ Загружено станций:', stations.length);
     </script>
 </body>
 </html>
