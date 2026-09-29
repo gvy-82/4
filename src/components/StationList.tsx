@@ -1,4 +1,3 @@
-import React from 'react';
 import { RadioStation } from '../types';
 import { useTheme } from '../App';
 
@@ -11,14 +10,14 @@ interface StationListProps {
   onSearchChange: (query: string) => void;
 }
 
-const StationList: React.FC<StationListProps> = ({
+const StationList = ({
   stations,
   currentStation,
   onSelectStation,
   isLoading,
   searchQuery,
   onSearchChange,
-}) => {
+}: StationListProps) => {
   const { isDark } = useTheme();
 
   return (

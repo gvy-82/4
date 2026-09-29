@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { RadioStation } from '../types';
 import { useTheme } from '../App';
 
@@ -13,7 +13,7 @@ interface PlayerProps {
   onStopRecord: () => void;
   volume: number;
   onVolumeChange: (vol: number) => void;
-  audioRef: React.RefObject<HTMLAudioElement>;
+  audioRef: React.RefObject<HTMLAudioElement | null>;
 }
 
 const formatTime = (seconds: number) => {
@@ -22,7 +22,7 @@ const formatTime = (seconds: number) => {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 };
 
-const Player: React.FC<PlayerProps> = ({
+const Player = ({
   station,
   isPlaying,
   isRecording,
@@ -34,7 +34,7 @@ const Player: React.FC<PlayerProps> = ({
   volume,
   onVolumeChange,
   audioRef,
-}) => {
+}: PlayerProps) => {
   const { isDark } = useTheme();
   const progressRef = useRef<HTMLDivElement>(null);
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Country } from '../types';
 import { useTheme } from '../App';
 
@@ -53,13 +52,13 @@ const COUNTRY_FLAGS: Record<string, string> = {
   'Philippines': '🇵🇭',
 };
 
-const CountryList: React.FC<CountryListProps> = ({
+const CountryList = ({
   countries,
   selectedCountry,
   onSelectCountry,
   searchQuery,
   onSearchChange,
-}) => {
+}: CountryListProps) => {
   const { isDark } = useTheme();
 
   const filteredCountries = countries.filter((c) =>

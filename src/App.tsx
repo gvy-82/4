@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
 import CountryList from './components/CountryList';
 import StationList from './components/StationList';
 import Player from './components/Player';
 import Equalizer from './components/Equalizer';
 import { useAudioEngine } from './hooks/useAudioEngine';
-import { RadioStation, Country } from './types';
+import type { RadioStation, Country } from './types';
 
 const API_BASE = 'https://de1.api.radio-browser.info/json';
 
-// Theme context
 interface ThemeContextType {
   isDark: boolean;
   toggleTheme: () => void;
@@ -29,26 +28,34 @@ function App() {
   const [stationSearch, setStationSearch] = useState('');
   const [audioInitialized, setAudioInitialized] = useState(false);
   const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem('radio-theme');
-    return saved ? saved === 'dark' : true;
+    try {
+      const saved = localStorage.getItem('radio-theme');
+      return saved ? saved === 'dark' : true;
+    } catch {
+      return true;
+    }
   });
 
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioEngine = useAudioEngine();
 
   const toggleTheme = useCallback(() => {
     setIsDark((prev) => {
       const next = !prev;
-      localStorage.setItem('radio-theme', next ? 'dark' : 'light');
+      try {
+        localStorage.setItem('radio-theme', next ? 'dark' : 'light');
+      } catch {
+        // ignore
+      }
       return next;
     });
   }, []);
 
-  // Fetch countries
   useEffect(() => {
     const fetchCountries = async () => {
       try {
         const res = await fetch(`${API_BASE}/countries?order=stationcount&reverse=true&hidebroken=true`);
+        if (!res.ok) throw new Error('Failed to fetch');
         const data: Country[] = await res.json();
         setCountries(data.filter((c) => c.stationcount > 10).slice(0, 100));
       } catch (err) {
@@ -58,18 +65,18 @@ function App() {
     fetchCountries();
   }, []);
 
-  // Fetch stations when country changes
   useEffect(() => {
     const fetchStations = async () => {
       setIsLoading(true);
       try {
         let url: string;
         if (selectedCountry) {
-          url = `${API_BASE}/stations/bycountry/${encodeURIComponent(selectedCountry)}?hidebroken=true&order=clickcount&reverse=true&limit=100`;
+          url = `${API_BASE}/stations/bycountryexact/${encodeURIComponent(selectedCountry)}?hidebroken=true&order=clickcount&reverse=true&limit=100`;
         } else {
           url = `${API_BASE}/stations/topclick/100?hidebroken=true`;
         }
         const res = await fetch(url);
+        if (!res.ok) throw new Error('Failed to fetch');
         const data: RadioStation[] = await res.json();
         setStations(data);
       } catch (err) {
@@ -82,10 +89,9 @@ function App() {
     fetchStations();
   }, [selectedCountry]);
 
-  // Filter stations by search
   const filteredStations = stations.filter((s) =>
     s.name.toLowerCase().includes(stationSearch.toLowerCase()) ||
-    s.tags.toLowerCase().includes(stationSearch.toLowerCase())
+    (s.tags && s.tags.toLowerCase().includes(stationSearch.toLowerCase()))
   );
 
   const initAudio = useCallback(() => {
@@ -101,12 +107,13 @@ function App() {
     initAudio();
     audioEngine.resumeContext();
 
-    audioRef.current.src = currentStation.url_resolved || currentStation.url;
-    audioRef.current.play().then(() => {
+    const audio = audioRef.current;
+    audio.src = currentStation.url_resolved || currentStation.url;
+    audio.play().then(() => {
       setIsPlaying(true);
     }).catch(() => {
-      audioRef.current!.src = `https://corsproxy.io/?${encodeURIComponent(currentStation.url_resolved || currentStation.url)}`;
-      audioRef.current!.play().then(() => {
+      audio.src = `https://corsproxy.io/?${encodeURIComponent(currentStation.url_resolved || currentStation.url)}`;
+      audio.play().then(() => {
         setIsPlaying(true);
       }).catch(() => {
         alert('Не удалось воспроизвести эту станцию. Попробуйте другую.');
@@ -128,12 +135,13 @@ function App() {
       if (audioRef.current) {
         initAudio();
         audioEngine.resumeContext();
-        audioRef.current.src = station.url_resolved || station.url;
-        audioRef.current.play().then(() => {
+        const audio = audioRef.current;
+        audio.src = station.url_resolved || station.url;
+        audio.play().then(() => {
           setIsPlaying(true);
         }).catch(() => {
-          audioRef.current!.src = `https://corsproxy.io/?${encodeURIComponent(station.url_resolved || station.url)}`;
-          audioRef.current!.play().then(() => {
+          audio.src = `https://corsproxy.io/?${encodeURIComponent(station.url_resolved || station.url)}`;
+          audio.play().then(() => {
             setIsPlaying(true);
           }).catch(() => {
             alert('Не удалось воспроизвести эту станцию.');
@@ -150,28 +158,23 @@ function App() {
           ? 'bg-gradient-to-br from-gray-950 via-gray-900 to-purple-950'
           : 'bg-gradient-to-br from-gray-50 via-white to-purple-50'
       }`}>
-        {/* Background effects */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           {isDark ? (
             <>
               <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl" />
               <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-600/10 rounded-full blur-3xl" />
-              <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-blue-600/5 rounded-full blur-3xl" />
             </>
           ) : (
             <>
               <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-300/20 rounded-full blur-3xl" />
               <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-300/20 rounded-full blur-3xl" />
-              <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-blue-300/10 rounded-full blur-3xl" />
             </>
           )}
         </div>
 
-        {/* Hidden audio element */}
         <audio ref={audioRef} crossOrigin="anonymous" preload="none" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 py-6">
-          {/* Header */}
           <header className="flex items-center justify-between mb-6">
             <div className="text-center flex-1">
               <h1 className={`text-3xl md:text-4xl font-bold bg-clip-text text-transparent ${
@@ -185,7 +188,6 @@ function App() {
                 Слушайте радио со всего мира • Эквалайзер • Запись
               </p>
             </div>
-            {/* Theme toggle */}
             <button
               onClick={toggleTheme}
               className={`p-3 rounded-full transition-all hover:scale-110 ${
@@ -207,9 +209,7 @@ function App() {
             </button>
           </header>
 
-          {/* Main Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            {/* Left sidebar - Countries */}
             <div className="lg:col-span-3 h-[500px] lg:h-[700px]">
               <CountryList
                 countries={countries}
@@ -220,7 +220,6 @@ function App() {
               />
             </div>
 
-            {/* Center - Stations */}
             <div className="lg:col-span-5 h-[500px] lg:h-[700px]">
               <StationList
                 stations={filteredStations}
@@ -232,7 +231,6 @@ function App() {
               />
             </div>
 
-            {/* Right sidebar - Player & EQ */}
             <div className="lg:col-span-4 flex flex-col gap-4">
               <Player
                 station={currentStation}
@@ -245,7 +243,7 @@ function App() {
                 onStopRecord={audioEngine.stopRecording}
                 volume={volume}
                 onVolumeChange={setVolume}
-                audioRef={audioRef as React.RefObject<HTMLAudioElement>}
+                audioRef={audioRef}
               />
               <Equalizer
                 bands={audioEngine.bands}
@@ -256,7 +254,6 @@ function App() {
             </div>
           </div>
 
-          {/* Footer */}
           <footer className={`text-center mt-6 text-xs ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>
             <p>Радиостанции предоставлены Radio Browser API • Записи сохраняются в формате WebM</p>
           </footer>

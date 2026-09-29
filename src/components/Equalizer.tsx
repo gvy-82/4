@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { EQBandConfig } from '../hooks/useAudioEngine';
 import { useTheme } from '../App';
 
@@ -20,7 +20,7 @@ const PRESETS: Record<string, number[]> = {
   'Electronic': [4, 3, 1, 0, -2, 2, 1, 3, 4, 5],
 };
 
-const Equalizer: React.FC<EqualizerProps> = ({ bands, analyserData, onBandChange, onReset }) => {
+const Equalizer = ({ bands, analyserData, onBandChange, onReset }: EqualizerProps) => {
   const { isDark } = useTheme();
   const [activePreset, setActivePreset] = useState('Flat');
 
