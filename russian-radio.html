@@ -371,15 +371,75 @@
         let isPlaying = false;
         const audio = document.getElementById('audioPlayer');
         
+        // Встроенный список российских радиостанций (на случай если API не работает)
+        function getBuiltinStations() {
+            return [
+                { stationuuid: '1', name: 'Русское Радио', url: 'https://rusradio.hostingradio.ru/rusradio128.mp3', url_resolved: 'https://rusradio.hostingradio.ru/rusradio128.mp3', favicon: '', tags: 'pop,russian', bitrate: 128, country: 'Russia' },
+                { stationuuid: '2', name: 'Европа Плюс', url: 'https://ep256.hostingradio.ru:8052/europaplus256.mp3', url_resolved: 'https://ep256.hostingradio.ru:8052/europaplus256.mp3', favicon: '', tags: 'pop,hit', bitrate: 256, country: 'Russia' },
+                { stationuuid: '3', name: 'Ретро ФМ', url: 'https://retroserver.streamr.ru:8043/retro256.mp3', url_resolved: 'https://retroserver.streamr.ru:8043/retro256.mp3', favicon: '', tags: 'retro,70s,80s,90s', bitrate: 256, country: 'Russia' },
+                { stationuuid: '4', name: 'Наше Радио', url: 'https://nashe1.hostingradio.ru/nashe-256', url_resolved: 'https://nashe1.hostingradio.ru/nashe-256', favicon: '', tags: 'rock,russian', bitrate: 256, country: 'Russia' },
+                { stationuuid: '5', name: 'Радио Рекорд', url: 'https://radiorecord.hostingradio.ru/rr_320.mp3', url_resolved: 'https://radiorecord.hostingradio.ru/rr_320.mp3', favicon: '', tags: 'dance,electronic', bitrate: 320, country: 'Russia' },
+                { stationuuid: '6', name: 'Авторадио', url: 'https://cast.fmprod.ru:8443/avto_256', url_resolved: 'https://cast.fmprod.ru:8443/avto_256', favicon: '', tags: 'pop,russian', bitrate: 256, country: 'Russia' },
+                { stationuuid: '7', name: 'Радио Дача', url: 'https://cast.fmprod.ru:8443/radiodacha_256', url_resolved: 'https://cast.fmprod.ru:8443/radiodacha_256', favicon: '', tags: 'pop,russian', bitrate: 256, country: 'Russia' },
+                { stationuuid: '8', name: 'Love Radio', url: 'https://microitv1.hostingradio.ru:8016/loveradio', url_resolved: 'https://microitv1.hostingradio.ru:8016/loveradio', favicon: '', tags: 'pop,love', bitrate: 128, country: 'Russia' },
+                { stationuuid: '9', name: 'Хит FM', url: 'https://hitfm.hostingradio.ru/hitfm128.mp3', url_resolved: 'https://hitfm.hostingradio.ru/hitfm128.mp3', favicon: '', tags: 'pop,hit', bitrate: 128, country: 'Russia' },
+                { stationuuid: '10', name: 'DFM', url: 'https://dfm.hostingradio.ru/dfm128.mp3', url_resolved: 'https://dfm.hostingradio.ru/dfm128.mp3', favicon: '', tags: 'dance,pop', bitrate: 128, country: 'Russia' },
+                { stationuuid: '11', name: 'Радиоmaximum', url: 'https://maximum.hostingradio.ru/maximum128.mp3', url_resolved: 'https://maximum.hostingradio.ru/maximum128.mp3', favicon: '', tags: 'rock', bitrate: 128, country: 'Russia' },
+                { stationuuid: '12', name: 'Radio Monte Carlo', url: 'https://montecarlo.hostingradio.ru/montecarlo128.mp3', url_resolved: 'https://montecarlo.hostingradio.ru/montecarlo128.mp3', favicon: '', tags: 'lounge,chillout', bitrate: 128, country: 'Russia' },
+                { stationuuid: '13', name: 'Радио Шансон', url: 'https://chanson.hostingradio.ru:8041/shanson128.mp3', url_resolved: 'https://chanson.hostingradio.ru:8041/shanson128.mp3', favicon: '', tags: 'chanson,russian', bitrate: 128, country: 'Russia' },
+                { stationuuid: '14', name: 'Comedy Radio', url: 'https://comedy.hostingradio.ru/comedy128.mp3', url_resolved: 'https://comedy.hostingradio.ru/comedy128.mp3', favicon: '', tags: 'pop,humor', bitrate: 128, country: 'Russia' },
+                { stationuuid: '15', name: 'Новое Радио', url: 'https://cast.fmprod.ru:8443/novoeradio_256', url_resolved: 'https://cast.fmprod.ru:8443/novoeradio_256', favicon: '', tags: 'pop,russian', bitrate: 256, country: 'Russia' },
+                { stationuuid: '16', name: 'Радио ENERGY', url: 'https://energy.hostingradio.ru/energy128.mp3', url_resolved: 'https://energy.hostingradio.ru/energy128.mp3', favicon: '', tags: 'dance,pop', bitrate: 128, country: 'Russia' },
+                { stationuuid: '17', name: 'Радио Jazz', url: 'https://cast.fmprod.ru:8443/radiojazz_256', url_resolved: 'https://cast.fmprod.ru:8443/radiojazz_256', favicon: '', tags: 'jazz', bitrate: 256, country: 'Russia' },
+                { stationuuid: '18', name: 'Rock FM', url: 'https://rockfm.hostingradio.ru/rockfm128.mp3', url_resolved: 'https://rockfm.hostingradio.ru/rockfm128.mp3', favicon: '', tags: 'rock', bitrate: 128, country: 'Russia' },
+                { stationuuid: '19', name: 'Радио МИР', url: 'https://cast.fmprod.ru:8443/mir_256', url_resolved: 'https://cast.fmprod.ru:8443/mir_256', favicon: '', tags: 'pop,russian', bitrate: 256, country: 'Russia' },
+                { stationuuid: '20', name: 'Радио Книга', url: 'https://cast.fmprod.ru:8443/radiokniga_256', url_resolved: 'https://cast.fmprod.ru:8443/radiokniga_256', favicon: '', tags: 'audiobook,talk', bitrate: 256, country: 'Russia' }
+            ];
+        }
+        
         // Загрузка станций
         async function loadStations() {
             try {
-                const response = await fetch(`${API_BASE}/stations/bycountryexact/Russia?hidebroken=true&order=clickcount&reverse=true&limit=100`);
+                // Пробуем разные варианты названия страны
+                let response = await fetch(`${API_BASE}/stations/bycountryexact/Russian%20Federation?hidebroken=true&order=clickcount&reverse=true&limit=100`);
                 stations = await response.json();
-                renderStations(stations);
+                
+                // Если не получилось, пробуем "Russia"
+                if (stations.length === 0) {
+                    response = await fetch(`${API_BASE}/stations/bycountryexact/Russia?hidebroken=true&order=clickcount&reverse=true&limit=100`);
+                    stations = await response.json();
+                }
+                
+                // Если всё ещё пусто, берём топ-100 популярных станций
+                if (stations.length === 0) {
+                    console.log('⚠️ Станции по стране не найдены, загружаем топ-100 популярных');
+                    response = await fetch(`${API_BASE}/stations/topclick/100?hidebroken=true`);
+                    stations = await response.json();
+                }
+                
+                // Если API всё равно не вернул данные, используем встроенный список
+                if (stations.length === 0) {
+                    console.log('⚠️ API не отвечает, используем встроенный список станций');
+                    stations = getBuiltinStations();
+                }
+                
+                console.log(`✅ Загружено станций: ${stations.length}`);
+                
+                if (stations.length === 0) {
+                    document.getElementById('stationsList').innerHTML = '<div class="empty-state"><p>Не удалось загрузить станции. Проверьте интернет-соединение.</p></div>';
+                } else {
+                    renderStations(stations);
+                }
             } catch (error) {
-                console.error('Ошибка загрузки:', error);
-                document.getElementById('stationsList').innerHTML = '<div class="empty-state"><p>Ошибка загрузки станций</p></div>';
+                console.error('❌ Ошибка загрузки:', error);
+                document.getElementById('stationsList').innerHTML = `
+                    <div class="empty-state">
+                        <div style="text-align: center;">
+                            <p style="margin-bottom: 10px;">❌ Ошибка загрузки станций</p>
+                            <p style="font-size: 12px; color: #9ca3af;">Проверьте интернет-соединение и обновите страницу</p>
+                            <button onclick="loadStations()" style="margin-top: 15px; padding: 8px 16px; background: #a855f7; border: none; border-radius: 8px; color: white; cursor: pointer;">Повторить</button>
+                        </div>
+                    </div>`;
             }
         }
         
@@ -514,13 +574,18 @@
         
         // Фильтрация станций
         function filterStations() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
             if (!query) return stations;
             
-            return stations.filter(s => 
-                s.name.toLowerCase().includes(query) ||
-                (s.tags && s.tags.toLowerCase().includes(query))
-            );
+            return stations.filter(s => {
+                const name = (s.name || '').toLowerCase();
+                const tags = (s.tags || '').toLowerCase();
+                const country = (s.country || '').toLowerCase();
+                
+                return name.includes(query) || 
+                       tags.includes(query) || 
+                       country.includes(query);
+            });
         }
         
         // Обработчик поиска
@@ -528,7 +593,11 @@
             renderStations(filterStations());
         });
         
+        // Делаем функцию доступной глобально для кнопки "Повторить"
+        window.loadStations = loadStations;
+        
         // Запуск
+        console.log('🚀 Запуск приложения...');
         loadStations();
     </script>
 </body>
