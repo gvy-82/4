@@ -398,48 +398,18 @@
         }
         
         // Загрузка станций
-        async function loadStations() {
-            try {
-                // Пробуем разные варианты названия страны
-                let response = await fetch(`${API_BASE}/stations/bycountryexact/Russian%20Federation?hidebroken=true&order=clickcount&reverse=true&limit=100`);
-                stations = await response.json();
-                
-                // Если не получилось, пробуем "Russia"
-                if (stations.length === 0) {
-                    response = await fetch(`${API_BASE}/stations/bycountryexact/Russia?hidebroken=true&order=clickcount&reverse=true&limit=100`);
-                    stations = await response.json();
-                }
-                
-                // Если всё ещё пусто, берём топ-100 популярных станций
-                if (stations.length === 0) {
-                    console.log('⚠️ Станции по стране не найдены, загружаем топ-100 популярных');
-                    response = await fetch(`${API_BASE}/stations/topclick/100?hidebroken=true`);
-                    stations = await response.json();
-                }
-                
-                // Если API всё равно не вернул данные, используем встроенный список
-                if (stations.length === 0) {
-                    console.log('⚠️ API не отвечает, используем встроенный список станций');
-                    stations = getBuiltinStations();
-                }
-                
-                console.log(`✅ Загружено станций: ${stations.length}`);
-                
-                if (stations.length === 0) {
-                    document.getElementById('stationsList').innerHTML = '<div class="empty-state"><p>Не удалось загрузить станции. Проверьте интернет-соединение.</p></div>';
-                } else {
-                    renderStations(stations);
-                }
-            } catch (error) {
-                console.error('❌ Ошибка загрузки:', error);
-                document.getElementById('stationsList').innerHTML = `
-                    <div class="empty-state">
-                        <div style="text-align: center;">
-                            <p style="margin-bottom: 10px;">❌ Ошибка загрузки станций</p>
-                            <p style="font-size: 12px; color: #9ca3af;">Проверьте интернет-соединение и обновите страницу</p>
-                            <button onclick="loadStations()" style="margin-top: 15px; padding: 8px 16px; background: #a855f7; border: none; border-radius: 8px; color: white; cursor: pointer;">Повторить</button>
-                        </div>
-                    </div>`;
+        function loadStations() {
+            console.log('🚀 Загружаем станции...');
+            
+            // Используем встроенный список станций
+            stations = getBuiltinStations();
+            
+            console.log(`✅ Загружено станций: ${stations.length}`);
+            
+            if (stations.length === 0) {
+                document.getElementById('stationsList').innerHTML = '<div class="empty-state"><p>Не удалось загрузить станции.</p></div>';
+            } else {
+                renderStations(stations);
             }
         }
         
