@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Russian Radio</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(135deg,#0a0a0f,#1a1a2e);min-height:100vh;color:#fff;padding:20px}
+.container{max-width:1000px;margin:0 auto}
+h1{text-align:center;font-size:2rem;background:linear-gradient(to right,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:10px}
+.subtitle{text-align:center;color:#9ca3af;margin-bottom:20px;font-size:.9rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:768px){.grid{grid-template-columns:1fr}}
+.card{background:rgba(17,24,39,.8);backdrop-filter:blur(10px);border-radius:16px;border:1px solid rgba(75,85,99,.5);padding:20px}
+.stations{height:600px;display:flex;flex-direction:column}
+.filter-bar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.filter-btn{padding:6px 12px;background:#1f2937;border:1px solid #4b5563;border-radius:20px;color:#9ca3af;font-size:12px;cursor:pointer;transition:all .2s}
+.filter-btn:hover,.filter-btn.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
+input[type=text]{width:100%;padding:10px;background:#1f2937;border:1px solid #4b5563;border-radius:8px;color:#fff;margin-bottom:15px}
+input[type=text]:focus{outline:none;border-color:#a855f7}
+.list{flex:1;overflow-y:auto}
+.list::-webkit-scrollbar{width:6px}
+.list::-webkit-scrollbar-thumb{background:rgba(168,85,247,.3);border-radius:3px}
+.station{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:2px;transition:all .2s}
+.station:hover{background:#1f2937}
+.station.active{background:rgba(168,85,247,.2);border:1px solid rgba(168,85,247,.3)}
+.icon{width:36px;height:36px;background:#374151;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.info{flex:1;min-width:0}
+.name{font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tags{font-size:11px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{font-size:9px;padding:2px 6px;border-radius:10px;font-weight:600;flex-shrink:0}
+.badge-record{background:#7c3aed;color:#fff}
+.badge-mc{background:#0ea5e9;color:#fff}
+.badge-dfm{background:#f59e0b;color:#000}
+.badge-other{background:#374151;color:#9ca3af}
+.player{display:flex;flex-direction:column;gap:20px}
+.player-info{display:flex;align-items:center;gap:15px}
+.player-icon{width:60px;height:60px;background:linear-gradient(135deg,#9333ea,#ec4899);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0}
+.player-name{font-size:1.2rem;font-weight:bold;margin-bottom:4px}
+.player-tags{font-size:13px;color:#9ca3af}
+.controls{display:flex;align-items:center;gap:15px}
+.play-btn{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#9333ea,#ec4899);border:none;color:#fff;font-size:1.5rem;cursor:pointer;flex-shrink:0}
+.play-btn:hover{transform:scale(1.05)}
+.vol-wrap{display:flex;align-items:center;gap:8px;flex:1}
+input[type=range]{flex:1;height:4px;-webkit-appearance:none;background:#374151;border-radius:2px;border:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:#a855f7;border-radius:50%;cursor:pointer}
+.status{font-size:12px;color:#6b7280}
+.status.live{color:#22c55e}
+.empty{text-align:center;padding:40px;color:#6b7280}
+.count{color:#9ca3af;font-size:14px}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🎵 Russian Radio</h1>
+<p class="subtitle">Record (86) • Monte Carlo (7) • DFM (1) • Другие (14) = 108 станций</p>
+<div class="grid">
+<div class="card stations">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+<h3>📻 Станции</h3>
+<span class="count" id="count">0</span>
+</div>
+<div class="filter-bar">
+<button class="filter-btn active" data-filter="all">🎵 Все</button>
+<button class="filter-btn" data-filter="record">🟣 Record</button>
+<button class="filter-btn" data-filter="montecarlo">🔵 Monte Carlo</button>
+<button class="filter-btn" data-filter="dfm">🟡 DFM</button>
+<button class="filter-btn" data-filter="other">⚪ Другие</button>
+</div>
+<input type="text" id="search" placeholder="🔍 Поиск по названию или жанру...">
+<div class="list" id="list"></div>
+</div>
+<div class="card player" id="player">
+<div class="empty">
+<div style="font-size:3rem;margin-bottom:10px">📻</div>
+<p>Выберите станцию для воспроизведения</p>
+</div>
+</div>
+</div>
+</div>
+<audio id="audio"></audio>
+<script>
+const S=[
+{id:1,n:'Radio Record',u:'https://radiorecord.hostingradio.ru/rr_main96.aacp',t:'dance, electronic',g:'record'},
+{id:2,n:'Record — Russian Mix',u:'https://radiorecord.hostingradio.ru/rus96.aacp',t:'russian, pop',g:'record'},
+{id:3,n:'Record — Супердискотека 90-х',u:'https://radiorecord.hostingradio.ru/sd9096.aacp',t:'90s, retro, dance',g:'record'},
+{id:4,n:'Record — Chill-Out',u:'https://radiorecord.hostingradio.ru/chil96.aacp',t:'chillout, lounge',g:'record'},
+{id:5,n:'Record — Deep',u:'https://radiorecord.hostingradio.ru/deep96.aacp',t:'deep house',g:'record'},
+{id:6,n:'Record — Megamix',u:'https://radiorecord.hostingradio.ru/mix96.aacp',t:'megamix, dance',g:'record'},
+{id:7,n:'Record — Rock',u:'https://radiorecord.hostingradio.ru/rock96.aacp',t:'rock',g:'record'},
+{id:8,n:'Record — Remix',u:'https://radiorecord.hostingradio.ru/rmx96.aacp',t:'remix, dance',g:'record'},
+{id:9,n:'Record — Pirate Station',u:'https://radiorecord.hostingradio.ru/ps96.aacp',t:'drum and bass, dnb',g:'record'},
+{id:10,n:'Record — Trancemission',u:'https://radiorecord.hostingradio.ru/tm96.aacp',t:'trance',g:'record'},
+{id:11,n:'Record — Chill House',u:'https://radiorecord.hostingradio.ru/chillhouse96.aacp',t:'chill, house',g:'record'},
+{id:12,n:'Record — Big Hits',u:'https://radiorecord.hostingradio.ru/bighits96.aacp',t:'hits, pop',g:'record'},
+{id:13,n:'Record — Record 80-х',u:'https://radiorecord.hostingradio.ru/198096.aacp',t:'80s, retro',g:'record'},
+{id:14,n:'Record — Рекорд 00-х',u:'https://radiorecord.hostingradio.ru/200096.aacp',t:'2000s, retro',g:'record'},
+{id:15,n:'Record — Phonk',u:'https://radiorecord.hostingradio.ru/phonk96.aacp',t:'phonk',g:'record'},
+{id:16,n:'Record — Rap Hits',u:'https://radiorecord.hostingradio.ru/rap96.aacp',t:'rap, hip-hop',g:'record'},
+{id:17,n:'Record — Rap Classics',u:'https://radiorecord.hostingradio.ru/rapclassics96.aacp',t:'rap, classics',g:'record'},
+{id:18,n:'Record — Techno',u:'https://radiorecord.hostingradio.ru/techno96.aacp',t:'techno',g:'record'},
+{id:19,n:'Record — Trap',u:'https://radiorecord.hostingradio.ru/trap96.aacp',t:'trap',g:'record'},
+{id:20,n:'Record — Dubstep',u:'https://radiorecord.hostingradio.ru/dub96.aacp',t:'dubstep',g:'record'},
+{id:21,n:'Record — Hardstyle',u:'https://radiorecord.hostingradio.ru/teo96.aacp',t:'hardstyle',g:'record'},
+{id:22,n:'Record — EDM',u:'https://radiorecord.hostingradio.ru/club96.aacp',t:'edm, club',g:'record'},
+{id:23,n:'Record — House Hits',u:'https://radiorecord.hostingradio.ru/househits96.aacp',t:'house',g:'record'},
+{id:24,n:'Record — Tech House',u:'https://radiorecord.hostingradio.ru/techouse96.aacp',t:'tech house',g:'record'},
+{id:25,n:'Record — Lo-Fi',u:'https://radiorecord.hostingradio.ru/lofi96.aacp',t:'lo-fi, chill',g:'record'},
+{id:26,n:'Record — Synthwave',u:'https://radiorecord.hostingradio.ru/synth96.aacp',t:'synthwave',g:'record'},
+{id:27,n:'Record — Tropical',u:'https://radiorecord.hostingradio.ru/trop96.aacp',t:'tropical',g:'record'},
+{id:28,n:'Record — Eurodance',u:'https://radiorecord.hostingradio.ru/eurodance96.aacp',t:'eurodance',g:'record'},
+{id:29,n:'Record — GOA/PSY',u:'https://radiorecord.hostingradio.ru/goa96.aacp',t:'goa, psytrance',g:'record'},
+{id:30,n:'Record — DnB Classics',u:'https://radiorecord.hostingradio.ru/drumhits96.aacp',t:'dnb',g:'record'},
+{id:31,n:'Record — Armin van Buuren',u:'https://radiorecord.hostingradio.ru/armin96.aacp',t:'trance',g:'record'},
+{id:32,n:'Record — Tiesto',u:'https://radiorecord.hostingradio.ru/tiesto96.aacp',t:'trance',g:'record'},
+{id:33,n:'Record — David Guetta',u:'https://radiorecord.hostingradio.ru/guetta96.aacp',t:'edm',g:'record'},
+{id:34,n:'Record — Martin Garrix',u:'https://radiorecord.hostingradio.ru/martingarrix64.aacp',t:'edm',g:'record'},
+{id:35,n:'Record — A State of Trance',u:'https://radiorecord.hostingradio.ru/asot64.aacp',t:'trance',g:'record'},
+{id:36,n:'Record — Uplifting',u:'https://radiorecord.hostingradio.ru/uplift96.aacp',t:'uplifting',g:'record'},
+{id:37,n:'Record — Progressive',u:'https://radiorecord.hostingradio.ru/progr96.aacp',t:'progressive',g:'record'},
+{id:38,n:'Record — Ambient',u:'https://radiorecord.hostingradio.ru/ambient96.aacp',t:'ambient',g:'record'},
+{id:39,n:'Record — Neurofunk',u:'https://radiorecord.hostingradio.ru/neurofunk96.aacp',t:'neurofunk',g:'record'},
+{id:40,n:'Record — Liquid Funk',u:'https://radiorecord.hostingradio.ru/liquidfunk96.aacp',t:'liquid funk',g:'record'},
+{id:41,n:'Record — Future Bass',u:'https://radiorecord.hostingradio.ru/fbass96.aacp',t:'future bass',g:'record'},
+{id:42,n:'Record — Future House',u:'https://radiorecord.hostingradio.ru/fut96.aacp',t:'future house',g:'record'},
+{id:43,n:'Record — Bass House',u:'https://radiorecord.hostingradio.ru/jackin96.aacp',t:'bass house',g:'record'},
+{id:44,n:'Record — Breaks',u:'https://radiorecord.hostingradio.ru/brks96.aacp',t:'breaks',g:'record'},
+{id:45,n:'Record — Jungle',u:'https://radiorecord.hostingradio.ru/jungle96.aacp',t:'jungle',g:'record'},
+{id:46,n:'Record — Electro',u:'https://radiorecord.hostingradio.ru/elect96.aacp',t:'electro',g:'record'},
+{id:47,n:'Record — Rave FM',u:'https://radiorecord.hostingradio.ru/rave96.aacp',t:'rave',g:'record'},
+{id:48,n:'Record — Hard Bass',u:'https://radiorecord.hostingradio.ru/hbass96.aacp',t:'hard bass',g:'record'},
+{id:49,n:'Record — Russian Gold',u:'https://radiorecord.hostingradio.ru/russiangold96.aacp',t:'russian',g:'record'},
+{id:50,n:'Record — Руки Вверх!',u:'https://radiorecord.hostingradio.ru/rv96.aacp',t:'russian, pop',g:'record'},
+{id:51,n:'Record — Нафталин FM',u:'https://radiorecord.hostingradio.ru/naft96.aacp',t:'retro',g:'record'},
+{id:52,n:'Record — Медляк FM',u:'https://radiorecord.hostingradio.ru/mdl96.aacp',t:'slow',g:'record'},
+{id:53,n:'Record — Party 24/7',u:'https://radiorecord.hostingradio.ru/party96.aacp',t:'party',g:'record'},
+{id:54,n:'Record — Beach Party',u:'https://radiorecord.hostingradio.ru/beach64.aacp',t:'beach',g:'record'},
+{id:55,n:'Record — На шашлыки!',u:'https://radiorecord.hostingradio.ru/nashashlyki96.aacp',t:'russian',g:'record'},
+{id:56,n:'Record — Black Rap',u:'https://radiorecord.hostingradio.ru/yo96.aacp',t:'rap',g:'record'},
+{id:57,n:'Record — Technopop',u:'https://radiorecord.hostingradio.ru/technopop96.aacp',t:'technopop',g:'record'},
+{id:58,n:'Record — Dream Dance',u:'https://radiorecord.hostingradio.ru/dream96.aacp',t:'dream',g:'record'},
+{id:59,n:'Record — Disco/Funk',u:'https://radiorecord.hostingradio.ru/discofunk96.aacp',t:'disco, funk',g:'record'},
+{id:60,n:'Record — Afro House',u:'https://radiorecord.hostingradio.ru/afro64.aacp',t:'afro',g:'record'},
+{id:61,n:'Record — Organic',u:'https://radiorecord.hostingradio.ru/organic96.aacp',t:'organic',g:'record'},
+{id:62,n:'Record — VIP House',u:'https://radiorecord.hostingradio.ru/vip96.aacp',t:'vip house',g:'record'},
+{id:63,n:'Record — Workout',u:'https://radiorecord.hostingradio.ru/workout96.aacp',t:'workout',g:'record'},
+{id:64,n:'Record — Latina Dance',u:'https://radiorecord.hostingradio.ru/latina96.aacp',t:'latina',g:'record'},
+{id:65,n:'Record — Reggae',u:'https://radiorecord.hostingradio.ru/reggae96.aacp',t:'reggae',g:'record'},
+{id:66,n:'Record — Darkside',u:'https://radiorecord.hostingradio.ru/darkside96.aacp',t:'dark',g:'record'},
+{id:67,n:'Record — Future Rave',u:'https://radiorecord.hostingradio.ru/futurerave96.aacp',t:'future rave',g:'record'},
+{id:68,n:'Record — Minimal/Tech',u:'https://radiorecord.hostingradio.ru/mini96.aacp',t:'minimal',g:'record'},
+{id:69,n:'Record — Dream Pop',u:'https://radiorecord.hostingradio.ru/dreampop96.aacp',t:'dream pop',g:'record'},
+{id:70,n:'Record — Moombahton',u:'https://radiorecord.hostingradio.ru/mmbt96.aacp',t:'moombahton',g:'record'},
+{id:71,n:'Record — Midtempo',u:'https://radiorecord.hostingradio.ru/mt96.aacp',t:'midtempo',g:'record'},
+{id:72,n:'Record — Trance Classics',u:'https://radiorecord.hostingradio.ru/trancehits96.aacp',t:'trance',g:'record'},
+{id:73,n:'Record — Trancehouse',u:'https://radiorecord.hostingradio.ru/trancehouse96.aacp',t:'trancehouse',g:'record'},
+{id:74,n:'Record — House Classics',u:'https://radiorecord.hostingradio.ru/houseclss96.aacp',t:'house',g:'record'},
+{id:75,n:'Record — EDM Classics',u:'https://radiorecord.hostingradio.ru/edmhits96.aacp',t:'edm',g:'record'},
+{id:76,n:'Record — Lo-Fi House',u:'https://radiorecord.hostingradio.ru/lofihouse64.aacp',t:'lo-fi house',g:'record'},
+{id:77,n:'Record — Summer Lounge',u:'https://radiorecord.hostingradio.ru/summerlounge64.aacp',t:'lounge',g:'record'},
+{id:78,n:'Record — На Хайпе',u:'https://radiorecord.hostingradio.ru/hype96.aacp',t:'hype',g:'record'},
+{id:79,n:'Record — Колбасный Цех',u:'https://radiorecord.hostingradio.ru/pump96.aacp',t:'hard',g:'record'},
+{id:80,n:'Record — Tecktonik',u:'https://radiorecord.hostingradio.ru/tecktonik96.aacp',t:'tecktonik',g:'record'},
+{id:81,n:'Record — Симфония FM',u:'https://radiorecord.hostingradio.ru/symph96.aacp',t:'symphonic',g:'record'},
+{id:82,n:'Record — TOP 100 EDM',u:'https://radiorecord.hostingradio.ru/top100edm96.aacp',t:'top edm',g:'record'},
+{id:83,n:'Record — Gold',u:'https://radiorecord.hostingradio.ru/gold96.aacp',t:'gold',g:'record'},
+{id:84,n:'Record — Ibiza',u:'https://radiorecord.hostingradio.ru/ibiza96.aacp',t:'ibiza',g:'record'},
+{id:85,n:'Record — 10s Dance',u:'https://radiorecord.hostingradio.ru/201096.aacp',t:'2010s',g:'record'},
+{id:86,n:'Record — 70s Dance',u:'https://radiorecord.hostingradio.ru/197096.aacp',t:'70s',g:'record'},
+{id:100,n:'Monte Carlo',u:'https://montecarlo.hostingradio.ru/montecarlo128.mp3',t:'lounge, chillout, jazz',g:'montecarlo'},
+{id:101,n:'Monte Carlo — Санкт-Петербург',u:'https://montecarlo.hostingradio.ru/montecarlo96.aacp',t:'lounge, pop, rock, spb',g:'montecarlo'},
+{id:102,n:'Monte Carlo — Jazz',u:'https://montecarlo.hostingradio.ru/mcjazz96.aacp',t:'jazz, smooth',g:'montecarlo'},
+{id:103,n:'Monte Carlo — Gold Collection',u:'https://montecarlo.hostingradio.ru/mcgold96.aacp',t:'gold, hits, classics',g:'montecarlo'},
+{id:104,n:'Monte Carlo — Bossa Nova',u:'https://mc-mcbossa.hostingradio.ru/mcbossa96.aacp',t:'bossa nova, jazz, latin',g:'montecarlo'},
+{id:105,n:'Monte Carlo — Sweet',u:'https://montecarlo.hostingradio.ru/mcsweet96.aacp',t:'sweet, romantic, chill',g:'montecarlo'},
+{id:106,n:'Monte Carlo — Golf Club',u:'https://montecarlo.hostingradio.ru/golfcup96.aacp',t:'lounge, easy listening',g:'montecarlo'},
+{id:110,n:'DFM',u:'https://dfm.hostingradio.ru/dfm128.mp3',t:'dance, pop, hits',g:'dfm'},
+{id:200,n:'Русское Радио',u:'https://rusradio.hostingradio.ru/rusradio128.mp3',t:'pop, russian',g:'other'},
+{id:201,n:'Европа Плюс',u:'https://ep256.hostingradio.ru:8052/europaplus256.mp3',t:'pop, hit',g:'other'},
+{id:202,n:'Ретро ФМ',u:'https://retroserver.streamr.ru:8043/retro256.mp3',t:'retro, 70s, 80s',g:'other'},
+{id:203,n:'Наше Радио',u:'https://nashe1.hostingradio.ru/nashe-256',t:'rock, russian',g:'other'},
+{id:204,n:'Авторадио',u:'https://cast.fmprod.ru:8443/avto_256',t:'pop, russian',g:'other'},
+{id:205,n:'Love Radio',u:'https://microitv1.hostingradio.ru:8016/loveradio',t:'pop, love',g:'other'},
+{id:206,n:'Хит FM',u:'https://hitfm.hostingradio.ru/hitfm128.mp3',t:'pop, hit',g:'other'},
+{id:207,n:'Радиоmaximum',u:'https://maximum.hostingradio.ru/maximum128.mp3',t:'rock',g:'other'},
+{id:208,n:'Радио Шансон',u:'https://chanson.hostingradio.ru:8041/shanson128.mp3',t:'chanson',g:'other'},
+{id:209,n:'Comedy Radio',u:'https://comedy.hostingradio.ru/comedy128.mp3',t:'pop, humor',g:'other'},
+{id:210,n:'Rock FM',u:'https://rockfm.hostingradio.ru/rockfm128.mp3',t:'rock',g:'other'},
+{id:211,n:'Radio ENERGY',u:'https://energy.hostingradio.ru/energy128.mp3',t:'dance, pop',g:'other'},
+{id:212,n:'Радио Дача',u:'https://cast.fmprod.ru:8443/radiodacha_256',t:'pop, russian',g:'other'},
+{id:213,n:'Новое Радио',u:'https://cast.fmprod.ru:8443/novoeradio_256',t:'pop, russian',g:'other'}
+];
+let cur=null,play=false,filt='all';
+const au=document.getElementById('audio');
+const B={record:'RECORD',montecarlo:'MC',dfm:'DFM',other:'FM'};
+const I={record:'🟣',montecarlo:'🔵',dfm:'🟡',other:'📻'};
+const C={record:'#7c3aed',montecarlo:'#0ea5e9',dfm:'#f59e0b',other:'#6b7280'};
+function gf(){const q=document.getElementById('search').value.toLowerCase();return S.filter(s=>(filt==='all'||s.g===filt)&&(!q||s.n.toLowerCase().includes(q)||s.t.toLowerCase().includes(q)))}
+function r(){const l=gf();document.getElementById('count').textContent=l.length+' / '+S.length;const c=document.getElementById('list');if(!l.length){c.innerHTML='<div class="empty">Ничего не найдено</div>';return}c.innerHTML=l.map(s=>`<div class="station ${cur&&cur.id===s.id?'active':''}" data-id="${s.id}"><div class="icon">${I[s.g]}</div><div class="info"><div class="name">${s.n}</div><div class="tags">${s.t}</div></div><span class="badge" style="background:${C[s.g]}30;color:${C[s.g]}">${B[s.g]}</span></div>`).join('');c.querySelectorAll('.station').forEach(e=>{e.onclick=()=>{const s=S.find(x=>x.id==e.dataset.id);if(s)sel(s)}})}
+function sel(s){cur=s;r();sp();pl()}
+function sp(){if(!cur)return;document.getElementById('player').innerHTML=`<div class="player-info"><div class="player-icon">${I[cur.g]}</div><div style="min-width:0;flex:1"><div class="player-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cur.n}</div><div class="player-tags">${cur.t}</div></div></div><div class="controls"><button class="play-btn" id="btn">${play?'⏸':'▶'}</button><div class="vol-wrap"><span style="font-size:12px">🔊</span><input type="range" id="vol" min="0" max="1" step="0.01" value="${au.volume}"></div></div><div class="status ${play?'live':''}">${play?'● LIVE — играет':'○ Пауза'}</div>`;document.getElementById('btn').onclick=tg;document.getElementById('vol').oninput=e=>au.volume=e.target.value}
+function pl(){if(!cur)return;au.src=cur.u;au.play().then(()=>{play=true;sp()}).catch(()=>{au.src='https://corsproxy.io/?'+encodeURIComponent(cur.u);au.play().then(()=>{play=true;sp()}).catch(()=>alert('Не удалось: '+cur.n))})}
+function tg(){if(play){au.pause();play=false}else{au.play();play=true}sp()}
+document.querySelectorAll('.filter-btn').forEach(b=>{b.onclick=()=>{document.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');filt=b.dataset.filter;r()}});
+document.getElementById('search').oninput=()=>r();
+r();
+</script>
+</body>
+</html>
