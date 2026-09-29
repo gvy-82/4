@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 * {
   box-sizing: border-box;
@@ -10,7 +8,8 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #0a0a0f;
+  margin: 0;
+  padding: 0;
   transition: background-color 0.3s ease;
 }
 
@@ -110,11 +109,4 @@ input[type="range"]::-moz-range-thumb {
 
 .animate-pulse-glow {
   animation: pulse-glow 2s infinite;
-}
-
-/* Responsive adjustments */
-@media (max-width: 1024px) {
-  .eq-slider {
-    width: 24 !important;
-  }
 }
