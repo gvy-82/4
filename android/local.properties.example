@@ -1,0 +1,16 @@
+# Этот файл содержит путь к Android SDK
+# Скопируйте этот файл как local.properties и укажите правильный путь
+
+# Windows (замените на ваш путь):
+sdk.dir=C:\\Android\\Sdk
+
+# Mac (замените на ваш путь):
+# sdk.dir=/Users/ВАШ_ПОЛЬЗОВАТЕЛЬ/Library/Android/sdk
+
+# Linux (замените на ваш путь):
+# sdk.dir=/home/ВАШ_ПОЛЬЗОВАТЕЛЬ/Android/Sdk
+
+# ВАЖНО:
+# 1. Скопируйте этот файл как local.properties
+# 2. Укажите правильный путь к Android SDK
+# 3. На Windows используйте двойные обратные слэши: C:\\Android\\Sdk
