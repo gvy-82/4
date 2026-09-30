@@ -14,10 +14,27 @@ android {
         versionName "1.0"
     }
 
+    // Конфигурация подписывания для Release APK
+    signingConfigs {
+        release {
+            // Раскомментируйте и заполните после создания ключа подписи
+            // storeFile file('../release-key.jks')
+            // storePassword 'ВАШ_ПАРОЛЬ'
+            // keyAlias 'my-key'
+            // keyPassword 'ВАШ_ПАРОЛЬ'
+        }
+    }
+
     buildTypes {
+        debug {
+            // Debug APK не требует подписи
+            debuggable true
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // Раскомментируйте после настройки signingConfigs.release
+            // signingConfig signingConfigs.release
         }
     }
     
